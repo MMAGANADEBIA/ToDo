@@ -11,13 +11,8 @@ import Home from './screens/home.js';
 import Task from './screens/task.js';
 import TagSystem from './screens/tagSystem.js';
 import ListCategory from './screens/listCategory.js';
-//import components
-import SideMenu from './components/sideMenu.js';
 
 export default function App() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const Stack = createNativeStackNavigator();
 
   const Drawer = createDrawerNavigator();
 

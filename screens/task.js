@@ -1,4 +1,5 @@
 //important modules
+import { StatusBar } from 'expo-status-bar';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native'
 import { useState, useRef } from 'react';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -46,16 +47,20 @@ export default function Task({ navigation }) {
 
   const priorityRadioButtons = [
     {
-      label: 'Sin prioridad'
+      label: 'Sin prioridad',
+      deactiveColor: '#e2e2e2',
     },
     {
-      label: 'Normal'
+      label: 'Normal',
+      deactiveColor: 'blue',
     },
     {
-      label: 'Media'
+      label: 'Media',
+      deactiveColor: 'orange',
     },
     {
-      label: 'Alta'
+      label: 'Alta',
+      deactiveColor: 'red',
     }
   ]
 
@@ -116,6 +121,9 @@ export default function Task({ navigation }) {
   return (
     <View style={styles.container}>
 
+      <StatusBar style="auto" />
+
+      {/*SAVE AND CANCEL BUTTONS IN FIRST ROW OF SCREEN*/}
       <View style={styles.firstRowButtons}>
         <TouchableOpacity
           onPress={saveTask}
@@ -130,6 +138,7 @@ export default function Task({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/*TASK NAME*/}
       <Text style={styles.textLabel}>Tarea</Text>
       <TextInput
         style={styles.input}
@@ -140,6 +149,7 @@ export default function Task({ navigation }) {
         onChangeText={setTask}
         defaultValue={`${task ? task : ''}`}
       />
+      {/*DESCRIPTION INPUT*/}
       <Text style={styles.textLabel} >Descripción</Text>
       <TextInput
         style={styles.input}
@@ -152,34 +162,48 @@ export default function Task({ navigation }) {
         defaultValue={`${description ? description : ''}`}
       />
 
+      {/*TAG SELECTOR MODAL*/}
       <View>
+        <Text style={styles.textLabel}>Etiqueta</Text>
         <ModalSelector
           data={tags}
+          supportedOrientations={['portrait']}
           initValue={`${tagSelected ? tagSelected : 'Selecciona una etiqueta'}`}
           onChange={(option) => setTagSelected(option.label)}
           cancelText="Cancelar"
-          // onTouchCancel={() => console.log("hello")}
           style={styles.modalSelector}
+          selectStyle={styles.selectStyle}
+          //Text style of the options inside the modal
+          optionTextStyle={styles.selectTextStyle}
+          //Text in the square
+          initValueTextStyle={styles.selectTextStyle}
         />
       </View>
 
+      {/*PRIORITY RADIO BUTTONS*/}
       <Text style={styles.textLabel}>Prioridad</Text>
       <RadioButtonRN
         data={priorityRadioButtons}
         selectedBtn={(element) => setPriority(element.label)}
+        box={false}
+        style={styles.radioButtons}
+        boxStyle={styles.boxRadioStyle}
+        textStyle={styles.textRadioStyle}
       />
 
+      {/*REMINDER INPUT AND MODAL*/}
+      <Text style={styles.textLabel}>Recordatorio</Text>
       <TouchableOpacity
         // onPress={() => setModalOpen(true)}
         onPress={() => setTimeDateOpen(true)}
       >
         <TextInput
-          defaultValue={`${date ? date : 'Agregar recordatorio'}`}
+          defaultValue={`${date ? date : 'Agregar recordatorio...'}`}
           editable={false}
-          style={[styles.input, styles.datePicker]}
+          style={styles.datePicker}
         />
       </TouchableOpacity>
-
+      {/*DATE PICKER MODAL*/}
       <DateTimePickerModal
         isVisible={timeDateOpen}
         mode='datetime'
@@ -187,13 +211,20 @@ export default function Task({ navigation }) {
         onCancel={() => setTimeDateOpen(false)}
       />
 
+      {/*CATEGORY MODAL SELECTOR*/}
       <View>
+        <Text style={styles.textLabel}>Categoria</Text>
         <ModalSelector
           data={categories}
           initValue={`${categorySelected ? categorySelected : 'Selecciona una categoria de lista'}`}
           onChange={(option) => setCategorieSelected(option.label)}
           cancelText="Cancelar"
           style={styles.modalSelector}
+          selectStyle={styles.selectStyle}
+          //Text style of the options inside the modal
+          optionTextStyle={styles.selectTextStyle}
+          //Text in the square
+          initValueTextStyle={styles.selectTextStyle}
         />
       </View>
 
@@ -216,7 +247,7 @@ export default function Task({ navigation }) {
       {/*   </TouchableOpacity> */}
       {/* </Modal> */}
 
-
+      {/*ALERT IN CASE TASK INFORMATION ARE EMPTY*/}
       <AwesomeAlert
         show={showAlert}
         showProgress={false}
@@ -245,7 +276,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   textLabel: {
-    marginTop: 10,
+    marginTop: 20,
   },
   input: {
     width: '100%',
@@ -262,7 +293,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   modalSelector: {
-    marginTop: 20,
+    // marginTop: 20,
   },
   firstRowButtons: {
     display: 'flex',
@@ -281,8 +312,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   datePicker: {
-    marginTop: 20,
-    marginBottom: 20,
+    // marginTop: 20,
+    // marginBottom: 20,
+    color: '#000'
   },
   modalButton: {
     backgroundColor: 'red',
@@ -292,5 +324,36 @@ const styles = StyleSheet.create({
     marginTop: 20,
     display: 'flex',
     justifyContent: 'center',
+  },
+  radioButtons: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  boxRadioStyle: {
+    width: 100,
+    height: 70,
+    display: 'flex',
+    flexDirection: 'column',
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center'
+    // backgroundColor: 'red',
+  },
+  textRadioStyle: {
+    textAlign: 'center',
+  },
+  optionContainerStyle: {
+    backgroundColor: '#fff',
+  },
+  //modal border color.
+  selectStyle: {
+    borderColor: '#000',
+    color: '#000',
+  },
+  //modal inside text.
+  selectTextStyle: {
+    color: '#000',
+    // backgroundColor: '#fff',
   }
 });

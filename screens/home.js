@@ -1,44 +1,32 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, TouchableOpacity, Image, Text } from 'react-native';
-import { useState } from 'react';
-// import Drawer from 'react-native-drawer';
+import { StyleSheet, View, TouchableOpacity, Image, Text, ScrollView } from 'react-native';
 import 'react-native-gesture-handler';
+import Checkbox from 'expo-checkbox';
+import { useState } from 'react';
+// import { useState } from 'react';
 // import { NavigationContainer } from '@react-navigation/native';
 // import { createDrawerNavigator } from '@react-navigation/drawer';
 //images imports
 import Plus from '../assets/icons/plus.png';
-//import modules
-// import SideMenu from '../components/sideMenu.js';
-// import TagSystem from './tagSystem.js';
 
+let selectedTask = [];
 
 export default function Home({ navigation }) {
-  // const [isOpen, setIsOpen] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
 
-  // const Drawer = createDrawerNavigator();
+  const handleCheckedTasks = (value) => {
+    setIsChecked(value);
+  }
+
+  const editTask = () => {
+    navigation.navigate("Nueva Tarea");
+  }
 
   return (
     <View style={styles.container}>
 
       <StatusBar style="auto" />
-
-      {/* <Drawer */}
-      {/*   type='overlay' */}
-      {/*   open={true} */}
-      {/*   tapToClose={true} */}
-      {/*   openDrawerOffset={0.3} */}
-      {/*   closedDrawerOffset={0} */}
-      {/*   content={<SideMenu />} */}
-      {/*   onClose={() => { */}
-      {/*     setIsOpen(false) */}
-      {/*     console.log("is closed") */}
-      {/*   } */}
-      {/*   } */}
-      {/*   onOpen={console.log("is open")} */}
-      {/*   side="right" */}
-      {/* > */}
-      {/* </Drawer> */}
 
       <TouchableOpacity
         style={styles.newTask}
@@ -46,6 +34,23 @@ export default function Home({ navigation }) {
       >
         <Image source={Plus} style={styles.icon} />
       </TouchableOpacity>
+
+      <ScrollView>
+        <View style={styles.checkbox}>
+          <Checkbox
+            style={styles.checkbox}
+            value={isChecked}
+            onValueChange={(value) => handleCheckedTasks(value)}
+          />
+          <TouchableOpacity
+            onPress={editTask}
+          >
+            <Text style={[styles.checkboxText, isChecked ? styles.checkedBoxDecoration : '']}>task example</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      <Text>Filter by priority, list type, or tags</Text>
 
       {/* <NavigationContainer> */}
       {/*   <Drawer.Navigator> */}
@@ -58,12 +63,10 @@ export default function Home({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  // container: {
-  //   flex: 1,
-  //   backgroundColor: '#fff',
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  // },
+  container: {
+    padding: 15,
+    backgroundColor: '#fff',
+  },
   newTask: {
     position: 'absolute',
     marginLeft: '80%',
@@ -83,5 +86,18 @@ const styles = StyleSheet.create({
     shadowColor: '#000000',
     shadowOpacity: 0.8,
     shadowRadius: 3,
+  },
+  checkbox: {
+    display: 'flex',
+    flexDirection: 'row',
+
+  },
+  checkboxText: {
+    marginLeft: 10,
+  },
+  checkedBoxDecoration: {
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+    opacity: 0.5,
   }
 });

@@ -13,6 +13,7 @@ export default function TagSystem({ navigation }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [color, setColor] = useState(null);
   const [tagName, setTagName] = useState(null);
+  const [description, setDescription] = useState(null);
   const [showAlert, setShowalert] = useState(false);
 
   const saveTag = () => {
@@ -38,12 +39,14 @@ export default function TagSystem({ navigation }) {
         >
           <Image source={Diskette} style={styles.icon} />
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={handleCancel}
           style={styles.cancelTag}
         >
           <Text style={styles.buttonText}>Cancelar</Text>
         </TouchableOpacity>
+
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
@@ -66,6 +69,11 @@ export default function TagSystem({ navigation }) {
         placeholder='Etiqueta'
         defaultValue={tagName}
       />
+      <Text style={styles.textLabel}>Descripción</Text>
+      <TextInput
+        placeholder='Descripción'
+        style={styles.input}
+      />
       <View style={styles.colors}>
         <TouchableOpacity
           style={styles.colorPickerBtn}
@@ -79,6 +87,12 @@ export default function TagSystem({ navigation }) {
         </View>
       </View>
 
+      <View style={styles.tagList}>
+        <Text>example tag</Text>
+        <TouchableOpacity>
+          <Text>delete</Text>
+        </TouchableOpacity>
+      </View>
 
       <Modal
         // animationType='slide'
@@ -221,5 +235,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     display: 'flex',
     justifyContent: 'center',
+  },
+  tagList: {
+    display: 'flex',
+    flexDirection: 'row',
   },
 });
