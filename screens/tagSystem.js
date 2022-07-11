@@ -1,13 +1,21 @@
 //important modules
+import { StatusBar } from 'expo-status-bar';
 import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ColorPicker from 'react-native-wheel-color-picker';
 import AwesomeAlert from 'react-native-awesome-alerts';
 // import 'react-native-reanimated';
 import Modal from "react-native-modal";
+import Icon from 'react-native-vector-icons/FontAwesome';
+import * as SQLite from 'expo-sqlite';
+import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+//import components
+import TagComponent from '../components/tagComponent.js';
 //import icons
 import Diskette from '../assets/icons/diskette.png';
 
+//open sqlite database
+const db = SQLite.openDatabase('todo.db');
 
 export default function TagSystem({ navigation }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -15,13 +23,47 @@ export default function TagSystem({ navigation }) {
   const [tagName, setTagName] = useState(null);
   const [description, setDescription] = useState(null);
   const [showAlert, setShowalert] = useState(false);
+  const [tags, setTags] = useState();
+
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'create table if not exists tags(tag_id integer primary key autoincrement, tag_name text not null, description text, color text not null);'
+      );
+    });
+    db.transaction((tx) => {
+      tx.executeSql(
+        'select * from tags;',
+        [],
+        (_, { rows: { _array } }) => setTags(_array),
+        (_, error) => console.log`Error: ${error}`
+      )
+    });
+  }, [])
+
+  useEffect(() => {
+    setTags(tags);
+  }, [tags])
 
   const saveTag = () => {
-    if (color === null || tagName === null) {
-      setShowalert(true);
+    if (color && tagName) {
+      db.transaction((tx) => {
+        tx.executeSql('INSERT INTO tags(tag_name, description, color) values(?, ?, ?);',
+          [tagName, description, color]
+        );
+      })
+      db.transaction((tx) => {
+        tx.executeSql(
+          'select * from tags;',
+          [],
+          (_, { rows: { _array } }) => setTags(_array),
+          (_, error) => console.log`Error: ${error}`
+        )
+      });
     } else {
-      navigation.navigate("Tareas")
+      setShowalert(true);
     }
+    // navigation.navigate("Tareas")
   }
 
   const handleCancel = () => {
@@ -32,6 +74,8 @@ export default function TagSystem({ navigation }) {
 
   return (
     <View style={styles.container}>
+
+      <StatusBar style="auto" />
 
       <View style={styles.firstRow}>
         <TouchableOpacity
@@ -69,10 +113,11 @@ export default function TagSystem({ navigation }) {
         placeholder='Etiqueta'
         defaultValue={tagName}
       />
-      <Text style={styles.textLabel}>Descripción</Text>
+      <Text style={styles.textLabel}>Descripción (opcional)</Text>
       <TextInput
         placeholder='Descripción'
         style={styles.input}
+        onChangeText={(text) => setDescription(text)}
       />
       <View style={styles.colors}>
         <TouchableOpacity
@@ -82,17 +127,22 @@ export default function TagSystem({ navigation }) {
           <Text style={styles.buttonText}>Selecciona el color</Text>
         </TouchableOpacity>
         {/*colores recientes*/}
-        <View style={[{ backgroundColor: color }, styles.colorPickedSquare]}>
-          <Text style={color ? styles.tagName : { color: '#000' }} >{tagName}</Text>
+        <View style={styles.tagContainer}>
+          <Icon name='tag' size={30} color={color} />
+          <Text style={styles.tagName} >{tagName}</Text>
         </View>
       </View>
 
-      <View style={styles.tagList}>
-        <Text>example tag</Text>
-        <TouchableOpacity>
-          <Text>delete</Text>
-        </TouchableOpacity>
-      </View>
+      {
+        tags ?
+          <TagComponent tags={tags} />
+          :
+          <ContentLoader viewBox="0 0 380 70">
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+          </ContentLoader>
+      }
 
       <Modal
         // animationType='slide'
@@ -106,8 +156,6 @@ export default function TagSystem({ navigation }) {
         }
         style={styles.modal}
       >
-        {/* <View syltes={styles.modalContainer}> */}
-        {/* <View styles={styles.modalColorPicker}> */}
         <ColorPicker
           thumbSize={30}
           sliderSize={20}
@@ -115,7 +163,6 @@ export default function TagSystem({ navigation }) {
           onColorChangeComplete={(color) => setColor(color)}
           row={false}
         />
-        {/* </View> */}
 
         <View style={styles.modalButtons}>
           <TouchableOpacity
@@ -213,8 +260,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   tagName: {
-    color: '#fff',
+    color: '#000',
     textAlign: 'center',
+    marginLeft: 10,
   },
   colors: {
     marginTop: 20,
@@ -229,15 +277,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
   },
-  colorPickedSquare: {
-    width: 100,
-    height: 50,
-    borderRadius: 10,
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  tagList: {
+  tagContainer: {
+    marginRight: 30,
+    marginTop: 10,
     display: 'flex',
     flexDirection: 'row',
-  },
+  }
 });

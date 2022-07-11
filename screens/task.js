@@ -1,117 +1,154 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ModalSelector from 'react-native-modal-selector';
 import RadioButtonRN from 'radio-buttons-react-native';
-// import { LocaleConfig, Calendar } from 'react-native-calendars';
-import Modal from 'react-native-modal';
-// import TimePicker from 'react-time-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import * as SQLite from 'expo-sqlite';
+import * as Notifications from 'expo-notifications';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 //import images
 import Diskette from '../assets/icons/diskette.png';
+
+//open the sqlite database
+const db = SQLite.openDatabase('todo.db');
 
 export default function Task({ navigation }) {
   const [task, setTask] = useState(null);
   const [description, setDescription] = useState(null);
   const [showAlert, setShowalert] = useState(false);
-  // const [tags, setTags] = useState(null);
-  // const [ categories, setCategories ] = useState(null);
+  const [tags, setTags] = useState();
+  const [categories, setCategories] = useState();
   const [tagSelected, setTagSelected] = useState(null);
+  const [tagSelectedId, setTagSelectedId] = useState(null);
   const [priority, setPriority] = useState(null);
   const [date, setDate] = useState(null);
-  // const [modalOpen, setModalOpen] = useState(false);
   const [timeDateOpen, setTimeDateOpen] = useState(false);
   const [categorySelected, setCategorieSelected] = useState(null);
+  const [categorySelectedId, setCategorieSelectedId] = useState(null)
+
+  const isFocused = useIsFocused()
 
   const descriptionRef = useRef();
 
-  let tagIndex = 0;
-  let tags = [
-    { key: tagIndex++, section: true, label: 'Fruits' },
-    { key: tagIndex++, label: 'Red Apples' },
-    { key: tagIndex++, label: 'Cherries' },
-    { key: tagIndex++, label: 'Cranberries', accessibilityLabel: 'Tap here for cranberries' },
-    { key: tagIndex++, label: 'Vegetable', customKey: 'Not a fruit' }
-  ];
+  useEffect(() => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'create table if not exists tags(tag_id integer primary key autoincrement, tag_name text not null, description text, color text not null);'
+      );
+    });
+    db.transaction((tx) => {
+      tx.executeSql(
+        'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
+      )
+    });
+    db.transaction((tx) => {
+      tx.executeSql(
+        'select * from tags;',
+        [],
+        (_, { rows: { _array } }) => setTags(_array),
+        (_, error) => console.log`Error: ${error}`
+      )
+    });
+    db.transaction((tx) => {
+      tx.executeSql('select * from category_lists;',
+        [],
+        (_, { rows: { _array } }) => setCategories(_array),
+        (_, error) => console.log`Error: ${error}`
+      );
+    });
+    console.log("use focus effect");
+  }, [isFocused])
 
+  let tagIndex = 0;
+  let formattedTags = [{ key: tagIndex++, section: true, label: 'Etiquetas' }];
   let categoryIndex = 0;
-  let categories = [
-    { key: categoryIndex++, section: true, label: 'Fruits' },
-    { key: categoryIndex++, label: 'Red Apples' },
-    { key: categoryIndex++, label: 'Cherries' },
-    { key: categoryIndex++, label: 'Cranberries', accessibilityLabel: 'Tap here for cranberries' },
-    { key: categoryIndex++, label: 'Vegetable', customKey: 'Not a fruit' }
-  ];
+  let formattedCategories = [{ key: categoryIndex++, section: true, label: 'Categorias' }]
+
+  useEffect(() => {
+    setTags(tags);
+    if (tags) {
+      tags.map((tag) => {
+        formattedTags.push({ key: tagIndex++, label: tag.tag_name, id: tag.tag_id })
+      })
+    }
+    setCategories(categories);
+    if (categories) {
+      categories.map((category) => {
+        formattedCategories.push({ key: categoryIndex++, label: category.category_name, id: category.category_id })
+      })
+    }
+  }, [tags, categories, tagSelected, priority, categorySelected])
 
   const priorityRadioButtons = [
     {
       label: 'Sin prioridad',
-      deactiveColor: '#e2e2e2',
     },
     {
       label: 'Normal',
-      deactiveColor: 'blue',
     },
     {
       label: 'Media',
-      deactiveColor: 'orange',
     },
     {
       label: 'Alta',
-      deactiveColor: 'red',
     }
   ]
 
-  // LocaleConfig.locales['MX'] = {
-  //   monthNames: [
-  //     'Enero',
-  //     'Febrero',
-  //     'Marzo',
-  //     'Abril',
-  //     'Mayo',
-  //     'Junio',
-  //     'Julio',
-  //     'Agosto',
-  //     'Septiembre',
-  //     'Octubre',
-  //     'Noviembre',
-  //     'Diciembre'
-  //   ],
-  //   monthNamesShort: ['Ene', 'Feb', 'Mar', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-  //   dayNames: ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes'],
-  //   dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie'],
-  //   today: "Hoy"
-  // };
-  // LocaleConfig.defaultLocale = 'MX';
-
   const saveTask = () => {
     if (task) {
-      console.log(task, description);
+
+      db.transaction((tx) => {
+        tx.executeSql(
+          'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_list text);'
+        )
+      })
+
+      if (date) {
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlayShound: true,
+            shouldSetBadge: true,
+          })
+        })
+
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: task,
+            body: `${description ? description : `Recordatorio : ${task}`}`,
+          },
+          trigger: date,
+        });
+      }
+
+      db.transaction((tx) => {
+        tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_list) values(?, ?, ?, ?, ?);',
+          [task, description, tagSelectedId, priority, categorySelectedId]
+        );
+      })
+
+      navigateBack();
+
+      // navigation.navigate("Tareas");
+
     } else {
       setShowalert(true);
     }
   }
 
-  const handleCancel = () => {
+  const navigateBack = () => {
     setTask(null)
     setDescription(null);
     setTagSelected(null)
     setDate(null);
+    setCategorieSelectedId(null);
+    setTagSelectedId(null);
+    setCategorieSelected(null);
     navigation.navigate("Tareas");
   }
-
-  // const calendarPressed = (day) => {
-  //   setDate(day);
-  //   setModalOpen(false);
-  //   console.log(date);
-  // }
-
-  // const calendarModalCancel = () => {
-  //   setModalOpen(false)
-  //   setDate(null);
-  // }
 
   const handleDateTime = (datetime) => {
     setDate(datetime);
@@ -131,7 +168,7 @@ export default function Task({ navigation }) {
           <Image source={Diskette} style={styles.icon} />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={handleCancel}
+          onPress={navigateBack}
           style={styles.cancelTask}
         >
           <Text style={styles.textButton}>Cancelar</Text>
@@ -149,11 +186,12 @@ export default function Task({ navigation }) {
         onChangeText={setTask}
         defaultValue={`${task ? task : ''}`}
       />
+
       {/*DESCRIPTION INPUT*/}
-      <Text style={styles.textLabel} >Descripción</Text>
+      <Text style={styles.textLabel} >Descripción (opcional)</Text>
       <TextInput
         style={styles.input}
-        placeholder="Descripción"
+        placeholder="Descripción (opcional)"
         returnKeyLabel='done'
         selectionColor={'#00000050'}
         editable={task ? true : false}
@@ -164,12 +202,16 @@ export default function Task({ navigation }) {
 
       {/*TAG SELECTOR MODAL*/}
       <View>
-        <Text style={styles.textLabel}>Etiqueta</Text>
+        <Text style={styles.textLabel}>Etiqueta (opcional)</Text>
         <ModalSelector
-          data={tags}
+          data={formattedTags}
           supportedOrientations={['portrait']}
-          initValue={`${tagSelected ? tagSelected : 'Selecciona una etiqueta'}`}
-          onChange={(option) => setTagSelected(option.label)}
+          initValue={`${tagSelected ? tagSelected : 'Selecciona una etiqueta (opciona)'}`}
+          onChange={(option) => {
+            setTagSelected(option.label)
+            setTagSelectedId(option.id)
+          }
+          }
           cancelText="Cancelar"
           style={styles.modalSelector}
           selectStyle={styles.selectStyle}
@@ -181,7 +223,7 @@ export default function Task({ navigation }) {
       </View>
 
       {/*PRIORITY RADIO BUTTONS*/}
-      <Text style={styles.textLabel}>Prioridad</Text>
+      <Text style={styles.textLabel}>Prioridad (opciona)</Text>
       <RadioButtonRN
         data={priorityRadioButtons}
         selectedBtn={(element) => setPriority(element.label)}
@@ -192,17 +234,26 @@ export default function Task({ navigation }) {
       />
 
       {/*REMINDER INPUT AND MODAL*/}
-      <Text style={styles.textLabel}>Recordatorio</Text>
-      <TouchableOpacity
-        // onPress={() => setModalOpen(true)}
-        onPress={() => setTimeDateOpen(true)}
-      >
-        <TextInput
-          defaultValue={`${date ? date : 'Agregar recordatorio...'}`}
-          editable={false}
-          style={styles.datePicker}
-        />
-      </TouchableOpacity>
+      <Text style={styles.textLabel}>Recordatorio (opcional)</Text>
+      <View style={styles.reminder}>
+        <TouchableOpacity
+          onPress={() => setTimeDateOpen(true)}
+        >
+          <TextInput
+            defaultValue={`${date ? date.toString().substr(0, 21) : 'Agregar recordatorio...'}`}
+            editable={false}
+            style={styles.datePicker}
+          />
+        </TouchableOpacity>
+        {
+          date &&
+          <TouchableOpacity style={styles.deleteReminder} onPress={() => {
+            setDate(null);
+          }}>
+            <Text style={styles.textButton}>Eliminar recordatorio</Text>
+          </TouchableOpacity>
+        }
+      </View>
       {/*DATE PICKER MODAL*/}
       <DateTimePickerModal
         isVisible={timeDateOpen}
@@ -215,9 +266,13 @@ export default function Task({ navigation }) {
       <View>
         <Text style={styles.textLabel}>Categoria</Text>
         <ModalSelector
-          data={categories}
-          initValue={`${categorySelected ? categorySelected : 'Selecciona una categoria de lista'}`}
-          onChange={(option) => setCategorieSelected(option.label)}
+          data={formattedCategories}
+          initValue={`${categorySelected ? categorySelected : 'Selecciona una categoria de lista (opcional)'}`}
+          onChange={(option) => {
+            setCategorieSelected(option.label)
+            setCategorieSelectedId(option.category_id)
+          }
+          }
           cancelText="Cancelar"
           style={styles.modalSelector}
           selectStyle={styles.selectStyle}
@@ -227,25 +282,6 @@ export default function Task({ navigation }) {
           initValueTextStyle={styles.selectTextStyle}
         />
       </View>
-
-      {/* <Modal */}
-      {/*   isVisible={modalOpen} */}
-      {/*   onBackButtonPress={() => setModalOpen(false)} */}
-      {/*   style={styles.modal} */}
-      {/* > */}
-      {/* <Calendar */}
-      {/*   onDayPress={(day) => calendarPressed(day)} */}
-      {/* /> */}
-
-      {/*   <Text>Lista de categorias</Text> */}
-
-      {/*   <TouchableOpacity */}
-      {/*     onPress={calendarModalCancel} */}
-      {/*     style={styles.modalButton} */}
-      {/*   > */}
-      {/*     <Text style={styles.textButton}>Cancelar</Text> */}
-      {/*   </TouchableOpacity> */}
-      {/* </Modal> */}
 
       {/*ALERT IN CASE TASK INFORMATION ARE EMPTY*/}
       <AwesomeAlert
@@ -355,5 +391,18 @@ const styles = StyleSheet.create({
   selectTextStyle: {
     color: '#000',
     // backgroundColor: '#fff',
+  },
+  reminder: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  deleteReminder: {
+    backgroundColor: 'red',
+    width: 150,
+    height: 40,
+    borderRadius: 10,
+    marginLeft: 10,
+    display: 'flex',
+    justifyContent: 'center',
   }
 });

@@ -5,7 +5,6 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Button, StyleSheet } from 'react-native';
 import 'react-native-gesture-handler';
 import Drawer from 'react-native-drawer';
-import { useState } from 'react';
 //Import screens
 import Home from './screens/home.js';
 import Task from './screens/task.js';
@@ -13,7 +12,6 @@ import TagSystem from './screens/tagSystem.js';
 import ListCategory from './screens/listCategory.js';
 
 export default function App() {
-
   const Drawer = createDrawerNavigator();
 
   return (

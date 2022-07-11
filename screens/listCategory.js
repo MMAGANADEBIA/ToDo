@@ -1,25 +1,83 @@
 //important modules
 import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as SQLite from 'expo-sqlite';
+import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import AwesomeAlert from 'react-native-awesome-alerts';
 //import images
 import Diskette from '../assets/icons/diskette.png';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+//import components
+import CategoryComponent from '../components/categoryComponent.js';
+
+//open the sqlite database
+const db = SQLite.openDatabase('todo.db');
 
 export default function ListCategorySystem({ navigation }) {
   const [category, setCategory] = useState(null);
   const [categoryDescription, setCategoryDescription] = useState(null);
+  const [categories, setCategories] = useState();
+  const [showAlert, setShowalert] = useState(false);
 
   const descriptionRef = useRef();
 
+  useEffect(() => {
+    // db.transaction((tx) => {
+    //   tx.executeSql(
+    //     'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
+    //   )
+    // });
+    db.transaction((tx) => {
+      tx.executeSql('select * from category_lists;',
+        [],
+        (_, { rows: { _array } }) => setCategories(_array),
+        (_, error) => console.log`Error: ${error}`
+      );
+    });
+  }, [])
+
+  useEffect(() => {
+    setCategories(categories);
+    console.log(categories);
+  }, [categories])
+
   const handleCancel = () => {
-    navigation.navigate("Tareas")
+    navigation.navigate("Tareas");
   }
 
   const handleSave = () => {
-    console.log("saving...");
+    if (category) {
+      db.transaction((tx) => {
+        tx.executeSql(
+          'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
+        )
+      })
+      db.transaction((tx) => {
+        tx.executeSql('insert into category_lists(category_name, description) values(?, ?);',
+          [category, categoryDescription]
+        );
+      })
+      db.transaction((tx) => {
+        tx.executeSql('select * from category_lists;',
+          [],
+          (_, { rows: { _array } }) => setCategories(_array),
+          (_, error) => console.log`Error: ${error}`
+        );
+      });
+      // update();
+    } else {
+      setShowalert(true);
+    }
+    // db.transaction((tx) => {
+    //   tx.executeSql('select * from category_lists;',
+    //     [],
+    //     (_, { rows: { _array } }) => setCategories(_array),
+    //     (_, error) => console.log`Error: ${error}`
+    //   );
+    // });
+    // update();
+    // navigation.navigate("Tareas");
   }
-
-
 
   return (
     <View style={styles.container}>
@@ -53,7 +111,7 @@ export default function ListCategorySystem({ navigation }) {
         onChangeText={(text) => setCategory(text)}
       />
 
-      <Text style={styles.textLabel}>Descripción de categoría</Text>
+      <Text style={styles.textLabel}>Descripción de categoría (opcional)</Text>
       <TextInput
         style={styles.input}
         selectionColor={'#00000050'}
@@ -64,14 +122,29 @@ export default function ListCategorySystem({ navigation }) {
         ref={descriptionRef}
       />
 
-      <View style={styles.categoryList}>
-        <Text>Lista de categorias</Text>
-        <TouchableOpacity
-        >
-          <Text>eliminar</Text>
-        </TouchableOpacity>
-      </View>
-
+      {
+        categories ?
+          <CategoryComponent categories={categories} />
+          :
+          <ContentLoader viewBox="0 0 380 70">
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
+          </ContentLoader>
+      }
+      <AwesomeAlert
+        show={showAlert}
+        showProgress={false}
+        title="Categoría vacía"
+        message="La categoría está vacía, escriba un nombre."
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={true}
+        showCancelButton={false}
+        showConfirmButton={true}
+        confirmText="Aceptar"
+        confirmButtonColor='#DD5B55'
+        onConfirmPressed={() => setShowalert(false)}
+      />
     </View>
   );
 }
