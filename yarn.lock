@@ -6229,6 +6229,11 @@
     "react-freeze" "^1.0.0"
     "warn-once" "^0.1.0"
 
+"react-native-select-dropdown@^2.0.4":
+  "integrity" "sha512-bv8iznvf04FThqCkkD4kxlbNjo2d69yLcEe3nUwalQ6ea2NXqUJRQ5uUr1SEDSCH8l6IQlmog8rkHthrLEzQ9A=="
+  "resolved" "https://registry.npmjs.org/react-native-select-dropdown/-/react-native-select-dropdown-2.0.4.tgz"
+  "version" "2.0.4"
+
 "react-native-sliding-drawer@^1.0.1":
   "integrity" "sha512-ggYar6A6CoEywwJhGzuJkl2dnHcj5EhJ1THX9kVHuPgYUm5aAykyFE+G322Mz0ML3UgTdGJ9fay6HgDSxtG2sw=="
   "resolved" "https://registry.npmjs.org/react-native-sliding-drawer/-/react-native-sliding-drawer-1.0.1.tgz"

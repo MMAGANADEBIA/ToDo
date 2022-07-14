@@ -1,11 +1,13 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, TouchableOpacity, Image, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Image, Text, ScrollView, SafeAreaView } from 'react-native';
 import 'react-native-gesture-handler';
 import { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import ContentLoader, { Rect, Circle, BulletList, List } from 'react-content-loader/native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import SelectDropdown from 'react-native-select-dropdown';
 //images imports
 import Plus from '../assets/icons/plus.png';
 //import components
@@ -18,13 +20,18 @@ export default function Home({ navigation }) {
   const [tasks, setTasks] = useState();
   const [categories, setCategories] = useState();
   const [tags, setTags] = useState();
+  const [pressedDelete, setPressedDelete] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [filteredTasks, setFilteredTasks] = useState();
+  const [filteredTags, setFilteredTags] = useState();
+  const [filteredCategories, setFilteredCategories] = useState();
 
   const isFocused = useIsFocused()
 
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
-        'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_list text);',
+        'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);',
       )
     });
     db.transaction((tx) => {
@@ -59,7 +66,13 @@ export default function Home({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-  }, []);
+    // db.transaction((tx) => {
+    //   tx.executeSql(
+    //     'drop table tasks'
+    //   )
+    // })
+  }, [isFocused]);
+
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -84,29 +97,54 @@ export default function Home({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-    console.log(tasks);
   }, [isFocused])
 
   useEffect(() => {
     setTasks(tasks);
+    setTags(tags);
     setCategories(categories);
   }, [tasks, tags, categories])
 
+  useEffect(() => {
+    setPressedDelete(pressedDelete);
+    afterClean();
+  }, [pressedDelete])
+
   const cleanTasks = () => {
-    console.log("cleaning")
+    setPressedDelete(true);
+  }
+  const afterClean = () => {
+    setPressedDelete(false);
   }
 
-  // const editTask = () => {
-  //   navigation.navigate("Nueva Tarea");
-  // }
+  filters = ["Sin filtro", "Tags", "Categories", "Priority"];
 
   return (
     <View style={styles.container}>
 
       <StatusBar style="auto" />
       <View style={styles.firstRowContainer}>
+        <View style={styles.filterRow}>
+          <Icon name="filter" color={'#000'} size={20} style={styles.icon} />
+          <SelectDropdown
+            data={filters}
+            onSelect={(selectedItem, index) => {
+              // setSelectedFilter(selectedItem.substring(selectedItem.indexOf(":") + 2))
+              setSelectedFilter(selectedItem);
+            }}
+            buttonTextAfterSelection={(selectedITem, index) => {
+              return selectedITem;
+            }}
+            rowTextForSelection={(item, index) => {
+              return item;
+            }}
+            defaultButtonText={"Filtrar"}
+            buttonStyle={styles.filter}
+          />
+        </View>
         <TouchableOpacity
           style={styles.clean}
+          onPress={cleanTasks}
         >
           <Text style={styles.buttonText}>Limpiar</Text>
         </TouchableOpacity>
@@ -116,26 +154,28 @@ export default function Home({ navigation }) {
         style={styles.newTask}
         onPress={() => navigation.navigate('Nueva Tarea')}
       >
-        <Image source={Plus} style={styles.icon} />
+        <Icon name="plus" size={60} color={'#00f'} />
       </TouchableOpacity>
 
       {
-        tasks && tags && categories ?
-          <TaskComponent
-            tasks={tasks}
-            tags={tags}
-            categories={categories}
-          />
+        //task && tags && categories
+        tasks ?
+          isFocused ?
+            <SafeAreaView>
+              <ScrollView style={styles.scrollView} contentContainerStyle={{ padding: 15 }} >
+                <TaskComponent
+                  tasks={tasks}
+                  tags={tags}
+                  categories={categories}
+                  delete={pressedDelete}
+                />
+              </ScrollView>
+            </SafeAreaView>
+            :
+            <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
           :
-          <ContentLoader viewBox="0 0 380 70">
-            <Circle cx="30" cy="30" r="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-          </ContentLoader>
+          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
       }
-
-      <Text>Filter by priority, list type, or tags</Text>
     </View>
   );
 }
@@ -150,11 +190,9 @@ const styles = StyleSheet.create({
     marginLeft: '85%',
     marginTop: '190%',
     elevation: 6,
+    zIndex: 6,
   },
-  icon: {
-    width: 60,
-    height: 60,
-  },
+
   drawerStyle: {
     mainOverlay: {
       backgroundColor: '#000',
@@ -173,14 +211,57 @@ const styles = StyleSheet.create({
   clean: {
     borderRadius: 10,
     height: 40,
-    width: 80,
+    width: '20%',
     backgroundColor: 'red',
     display: 'flex',
     justifyContent: 'center',
-    marginBottom: 15,
     // elevation: 5,
+    // alignSelf: 'flex-end',
+  },
+  icon: {
+    // width: 60,
+    // height: 60,
+    backgroundColor: '#fff',
+    // borderRadius: 10,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    // paddingTop: 8,
+    // elevation: 8,
+    // paddingLeft: 5,
+    padding: 8,
+  },
+  filter: {
+    backgroundColor: '#fff',
+    // elevation: 5,
+    width: '75%',
+    height: 40,
+    // borderRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  filterRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    // justifyContent: 'center'
   },
   firstRowContainer: {
-    alignItems: 'flex-end'
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  loader: {
+    position: 'absolute',
+    marginTop: '18%',
+    marginLeft: 15,
+  },
+  scrollView: {
+    height: '92%',
+    // padding: 15,
+    // backgroundColor: 'red',
+    // borderRadius: 10,
+    // clipToPadding: 'false',
+    // zIndex: 1,
+    // elevation: 1,
   }
 });

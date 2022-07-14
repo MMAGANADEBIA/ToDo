@@ -4,60 +4,68 @@ import Checkbox from 'expo-checkbox';
 import { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 
 //open sqlite database
 const db = SQLite.openDatabase('todo.db');
+
+let selectedBoxArray = [];
 
 export default function TaskComponent(props) {
   const [tasks, setTasks] = useState(props.task);
   const [tags, setTags] = useState(props.tags);
   const [categories, setCategories] = useState(props.categories);
   const [checkedList, setCheckedList] = useState([]);
-  const [colors, setColors] = useState();
+  const [pressedDelete, setPressedDelete] = useState(props.delete);
 
   useEffect(() => {
     setTasks(props.tasks);
     setTags(props.tags);
     setCategories(props.categories);
-    console.log("props useEffect tasks");
-  }, [props.tasks])
+    setPressedDelete(props.delete);
+  }, [props.tasks, props.delete])
 
   useEffect(() => {
     setTasks(tasks);
     setTags(tags);
     setCategories(categories);
-    console.log("set useEffect tasks");
-  }, [tasks, tags, categories])
+    setPressedDelete(pressedDelete);
+    // console.log(tasks);
+    if (pressedDelete) {
+      deleteTask();
+    }
+  }, [tasks, tags, categories, pressedDelete])
+
+  useEffect(() => {
+    setCheckedList(checkedList);
+  }, [checkedList])
+  useEffect(() => {
+    setCheckedList(checkedList);
+  }, [checkedList])
 
   const editTask = () => {
     console.log("redirect")
   }
 
   const handleCheckedTasks = (value, task_id) => {
-    if (value) {
-      setCheckedList(checkedList => [...checkedList, task_id])
-    }
-    if (!value) {
-      for (let i = 0; i < checkedList.length; i++) {
-        if (checkedList[i] === task_id) {
-          setCheckedList((checkedList) => checkedList.filter((_, index) => index !== 0));
-        }
-      }
-    }
+    value ? setCheckedList(checkedList => [...checkedList, task_id])
+      : setCheckedList((checkedList) => checkedList.filter(item => item !== task_id));
   }
 
-  const deleteTask = (task_id) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        'delete from tasks where task_id = ?;',
-        [task_id]
-      )
+  const deleteTask = () => {
+    checkedList.map((task_id) => {
+      db.transaction((tx) => {
+        tx.executeSql(
+          'delete from tasks where task_id = ?;',
+          [task_id]
+        )
+      })
     })
     update();
   }
 
   const update = () => {
+    setPressedDelete(false);
     db.transaction((tx) => {
       tx.executeSql(
         'select * from tasks;',
@@ -86,31 +94,42 @@ export default function TaskComponent(props) {
               >
                 <Text style={[styles.checkboxText, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
                 <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description}</Text>
-                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{`${task.priority ? `Prioridad: ${task.priority}` : `${task.category_list ? `Categoría: ${task.category_list}` : ''}`}`}</Text>
-                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{`${task.category_list ? `Categoría : ${task.category_list}` : ''}`}</Text>
-                <View style={styles.description}>
-                  <Icon name="tag" size={20} color="#000" />
+                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.priority}</Text>
+                {/* <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.category_list}</Text> */}
+                <View>
+                  {
+                    categories.map((category) => {
+                      if (category.category_id == task.category_id) {
+                        return (
+                          <View key={category.category_id}  >
+                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']} >{category.category_name}</Text>
+                          </View>
+                        );
+                      }
+                    })
+                  }
                 </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteTask(task.task_id)}
-              >
-                <Icon name="trash" size={30} color={'red'} />
+                <View >
+                  {
+                    tags.map((tag) => {
+                      if (tag.tag_id == task.tag_id) {
+                        return (
+                          <View key={tag.tag_id} style={styles.tagContainer}>
+                            <Icon name="tag" size={20} color={checkedList.includes(task.task_id) ? '#000' : tag.color} style={checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : ''} />
+                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '', styles.tagText]} >{tag.tag_name}</Text>
+                          </View>
+                        );
+                      }
+                    })
+                  }
+                </View>
               </TouchableOpacity>
             </View>
           )
         })
           :
-          <ContentLoader viewBox="0 0 380 70">
-            <Circle cx="30" cy="30" r="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-          </ContentLoader>
-
+          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
       }
-
     </View>
   );
 }
@@ -128,7 +147,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 20,
     backgroundColor: '#fff',
-    padding: 10,
+    padding: 15,
     borderRadius: 10,
     elevation: 5,
   },
@@ -142,9 +161,18 @@ const styles = StyleSheet.create({
   },
   description: {
     marginLeft: 30,
-    // width: '50%',
   },
-  delete: {
-    // position: 'absolute',
+  tagContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginLeft: 30,
   },
-})
+  tagText: {
+    marginLeft: 10,
+  },
+  loader: {
+    position: 'absolute',
+    marginTop: '18%',
+    marginLeft: 15,
+  }
+});

@@ -59,7 +59,6 @@ export default function Task({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-    console.log("use focus effect");
   }, [isFocused])
 
   let tagIndex = 0;
@@ -80,7 +79,7 @@ export default function Task({ navigation }) {
         formattedCategories.push({ key: categoryIndex++, label: category.category_name, id: category.category_id })
       })
     }
-  }, [tags, categories, tagSelected, priority, categorySelected])
+  }, [tags, categories, tagSelected, priority, categorySelected, task, description])
 
   const priorityRadioButtons = [
     {
@@ -102,7 +101,7 @@ export default function Task({ navigation }) {
 
       db.transaction((tx) => {
         tx.executeSql(
-          'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_list text);'
+          'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);'
         )
       })
 
@@ -125,7 +124,7 @@ export default function Task({ navigation }) {
       }
 
       db.transaction((tx) => {
-        tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_list) values(?, ?, ?, ?, ?);',
+        tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id) values(?, ?, ?, ?, ?);',
           [task, description, tagSelectedId, priority, categorySelectedId]
         );
       })
@@ -223,7 +222,7 @@ export default function Task({ navigation }) {
       </View>
 
       {/*PRIORITY RADIO BUTTONS*/}
-      <Text style={styles.textLabel}>Prioridad (opciona)</Text>
+      <Text style={styles.textLabel}>Prioridad (opcional)</Text>
       <RadioButtonRN
         data={priorityRadioButtons}
         selectedBtn={(element) => setPriority(element.label)}
@@ -270,7 +269,7 @@ export default function Task({ navigation }) {
           initValue={`${categorySelected ? categorySelected : 'Selecciona una categoria de lista (opcional)'}`}
           onChange={(option) => {
             setCategorieSelected(option.label)
-            setCategorieSelectedId(option.category_id)
+            setCategorieSelectedId(option.id)
           }
           }
           cancelText="Cancelar"
