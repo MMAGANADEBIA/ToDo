@@ -96,6 +96,7 @@ export default function Home({ navigation }) {
     setTasks(tasks);
     setTags(tags);
     setCategories(categories);
+    // console.log(categories);
     //Set the filters
     if (tasks) {
       tasks.map((task) => {
@@ -111,7 +112,7 @@ export default function Home({ navigation }) {
     }
     if (categories) {
       categories.map((category) => {
-        filters.push(`Categoría: ${category.category_name}`)
+        filters.push(`Lista: ${category.category_name}`)
       })
     }
   }, [tasks, tags, categories])
@@ -131,12 +132,12 @@ export default function Home({ navigation }) {
   let filters = ["Sin filtrar"];
 
   useEffect(() => {
+    //cuando cambia se ejecuta mucho
     //Set the filters
     if (tasks) {
       tasks.map((task) => {
         if (task.priority) {
           filters.push(`Prioridad: ${task.priority}`)
-          console.log(task.priority);
         }
       })
     }
@@ -147,7 +148,7 @@ export default function Home({ navigation }) {
     }
     if (categories) {
       categories.map((category) => {
-        filters.push(`Categoría: ${category.category_name}`)
+        filters.push(`Lista: ${category.category_name}`)
       })
     }
 
@@ -168,20 +169,16 @@ export default function Home({ navigation }) {
           db.transaction((tx) => {
             tx.executeSql('select * from tasks where priority like ?;',
               [toFilter],
-              (_, { rows: { _array } }) => {
-                setFilteredTasks(_array)
-              },
+              (_, { rows: { _array } }) => setFilteredTasks(_array),
               (_, error) => console.log(`Existe un: ${error}`)
             );
           });
         }
-        if (selectedFilter.includes("Categoría")) {
+        if (selectedFilter.includes("Lista")) {
           db.transaction((tx) => {
             tx.executeSql('select * from category_lists where category_name like ?;',
               [toFilter],
-              (_, { rows: { _array } }) => {
-                setFilteredCategories(_array)
-              },
+              (_, { rows: { _array } }) => setFilteredCategories(_array),
               (_, error) => console.log(`problema o que?: ${error}`)
             );
           });
@@ -190,6 +187,23 @@ export default function Home({ navigation }) {
         //make the change
         setSelectedFilter(null)
         setFilteredTasks(null);
+        if (tasks) {
+          tasks.map((task) => {
+            if (task.priority) {
+              filters.push(`Prioridad: ${task.priority}`)
+            }
+          })
+        }
+        if (tags) {
+          tags.map((tag) => {
+            filters.push(`Etiqueta: ${tag.tag_name}`)
+          })
+        }
+        if (categories) {
+          categories.map((category) => {
+            filters.push(`Lista: ${category.category_name}`)
+          })
+        }
       }
     } else {
       //make the change
@@ -204,11 +218,10 @@ export default function Home({ navigation }) {
     setFilteredTasks(filteredTasks);
     setFilteredTags(filteredTags);
     setFilteredCategories(filteredTags)
-    //get the other data
 
-    // console.log(filteredTasks.name);
     console.log(selectedFilter);
 
+    //get the other data
     if (selectedFilter !== null) {
       //PRIORITY
       if (filteredTasks) {
@@ -268,10 +281,10 @@ export default function Home({ navigation }) {
 
       //CATEGORIES
       if (filteredCategories) {
-        if (selectedFilter.includes("Categoría")) {
+        if (selectedFilter.includes("Lista")) {
           filteredCategories.map((category) => {
             db.transaction((tx) => {
-              tx.executeSql('select * from tasks where category_id like ?;',
+              tx.executeSql('select * from tasks where category_id = ?;',
                 [category.category_id],
                 (_, { rows: { _array } }) => {
                   setFilteredTasks(_array)
@@ -293,15 +306,14 @@ export default function Home({ navigation }) {
           })
         }
       }
+
     } else {
-      console.log(selectedFilter);
-      //make the change
+      //reset filtered data and put the filters again
       setFilteredTasks(null);
       if (tasks) {
         tasks.map((task) => {
           if (task.priority) {
             filters.push(`Prioridad: ${task.priority}`)
-            console.log(task.priority);
           }
         })
       }
@@ -312,7 +324,7 @@ export default function Home({ navigation }) {
       }
       if (categories) {
         categories.map((category) => {
-          filters.push(`Categoría: ${category.category_name}`)
+          filters.push(`Lista: ${category.category_name}`)
         })
       }
     }
