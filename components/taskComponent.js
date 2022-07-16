@@ -102,7 +102,7 @@ export default function TaskComponent(props) {
                       if (category.category_id == task.category_id) {
                         return (
                           <View key={category.category_id}  >
-                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']} >Categoría: {category.category_name}</Text>
+                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']} >Lista: {category.category_name}</Text>
                           </View>
                         );
                       }
