@@ -94,7 +94,7 @@ export default function TaskComponent(props) {
               >
                 <Text style={[styles.checkboxText, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
                 <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description}</Text>
-                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.priority}</Text>
+                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>Prioridad: {task.priority}</Text>
                 {/* <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.category_list}</Text> */}
                 <View>
                   {
