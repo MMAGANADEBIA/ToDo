@@ -8,8 +8,6 @@ import { useIsFocused } from '@react-navigation/native';
 import ContentLoader, { Rect, Circle, BulletList, List } from 'react-content-loader/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from 'react-native-select-dropdown';
-//images imports
-import Plus from '../assets/icons/plus.png';
 //import components
 import TaskComponent from '../components/taskComponent.js';
 
@@ -66,11 +64,6 @@ export default function Home({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-    // db.transaction((tx) => {
-    //   tx.executeSql(
-    //     'drop table tasks'
-    //   )
-    // })
   }, [isFocused]);
 
 
@@ -103,6 +96,24 @@ export default function Home({ navigation }) {
     setTasks(tasks);
     setTags(tags);
     setCategories(categories);
+    //Set the filters
+    if (tasks) {
+      tasks.map((task) => {
+        if (task.priority) {
+          filters.push(`Prioridad: ${task.priority}`)
+        }
+      })
+    }
+    if (tags) {
+      tags.map((tag) => {
+        filters.push(`Etiqueta: ${tag.tag_name}`)
+      })
+    }
+    if (categories) {
+      categories.map((category) => {
+        filters.push(`Categoría: ${category.category_name}`)
+      })
+    }
   }, [tasks, tags, categories])
 
   useEffect(() => {
@@ -117,7 +128,196 @@ export default function Home({ navigation }) {
     setPressedDelete(false);
   }
 
-  filters = ["Sin filtro", "Tags", "Categories", "Priority"];
+  let filters = ["Sin filtrar"];
+
+  useEffect(() => {
+    //Set the filters
+    if (tasks) {
+      tasks.map((task) => {
+        if (task.priority) {
+          filters.push(`Prioridad: ${task.priority}`)
+          console.log(task.priority);
+        }
+      })
+    }
+    if (tags) {
+      tags.map((tag) => {
+        filters.push(`Etiqueta: ${tag.tag_name}`)
+      })
+    }
+    if (categories) {
+      categories.map((category) => {
+        filters.push(`Categoría: ${category.category_name}`)
+      })
+    }
+
+    //Get the filter information
+    if (selectedFilter) {
+      if (selectedFilter.includes(":")) {
+        let toFilter = selectedFilter.substring(selectedFilter.indexOf(":") + 2)
+        if (selectedFilter.includes("Etiqueta")) {
+          db.transaction((tx) => {
+            tx.executeSql('select * from tags where tag_name like ?;',
+              [toFilter],
+              (_, { rows: { _array } }) => setFilteredTags(_array),
+              (_, error) => console.log(`hay un: ${error}`)
+            );
+          });
+        }
+        if (selectedFilter.includes("Prioridad")) {
+          db.transaction((tx) => {
+            tx.executeSql('select * from tasks where priority like ?;',
+              [toFilter],
+              (_, { rows: { _array } }) => {
+                setFilteredTasks(_array)
+              },
+              (_, error) => console.log(`Existe un: ${error}`)
+            );
+          });
+        }
+        if (selectedFilter.includes("Categoría")) {
+          db.transaction((tx) => {
+            tx.executeSql('select * from category_lists where category_name like ?;',
+              [toFilter],
+              (_, { rows: { _array } }) => {
+                setFilteredCategories(_array)
+              },
+              (_, error) => console.log(`problema o que?: ${error}`)
+            );
+          });
+        }
+      } else {
+        //make the change
+        setSelectedFilter(null)
+        setFilteredTasks(null);
+      }
+    } else {
+      //make the change
+      setSelectedFilter(null)
+      setFilteredTasks(null);
+    }
+
+  }, [selectedFilter])
+
+  useEffect(() => {
+    //Set the filtered data
+    setFilteredTasks(filteredTasks);
+    setFilteredTags(filteredTags);
+    setFilteredCategories(filteredTags)
+    //get the other data
+
+    // console.log(filteredTasks.name);
+    console.log(selectedFilter);
+
+    if (selectedFilter !== null) {
+      //PRIORITY
+      if (filteredTasks) {
+        if (selectedFilter.includes("Prioridad")) {
+          filteredTasks.map((task) => {
+            if (task.tag_id) {
+              db.transaction((tx) => {
+                tx.executeSql('select * from tags where tag_id like ?;',
+                  [task.tag_id],
+                  (_, { rows: { _array } }) => {
+                    setFilteredTags(_array)
+                    if (task.category) {
+                      db.transaction((tx) => {
+                        tx.executeSql('select * from category_lists where category_id like ?;',
+                          [task.category_id],
+                          (_, { rows: { _array } }) => setFilteredCategories(_array),
+                          (_, error) => console.log(`aqui: ${error}`)
+                        )
+                      })
+                    }
+                  },
+                  (_, error) => console.log`o acá: ${error}`
+                );
+              })
+            }
+          })
+        }
+      }
+
+      //TAGS
+      if (filteredTags) {
+        if (selectedFilter.includes("Etiqueta")) {
+          filteredTags.map((tag) => {
+            db.transaction((tx) => {
+              tx.executeSql('select * from tasks where tag_id like ?;',
+                [tag.tag_id],
+                (_, { rows: { _array } }) => {
+                  setFilteredTasks(_array)
+                  _array.map((task) => {
+                    if (task.category_id) {
+                      db.transaction((tx) => {
+                        tx.executeSql('select * from category_lists where category_id like ?;',
+                          [task.category_id],
+                          (_, { rows: { _array } }) => setFilteredCategories(_array),
+                          (_, error) => console.log(`Problema: ${error}`)
+                        )
+                      })
+                    }
+                  })
+                },
+                (_, error) => console.log(`Pedo: ${error}`)
+              )
+            })
+          })
+        }
+      }
+
+      //CATEGORIES
+      if (filteredCategories) {
+        if (selectedFilter.includes("Categoría")) {
+          filteredCategories.map((category) => {
+            db.transaction((tx) => {
+              tx.executeSql('select * from tasks where category_id like ?;',
+                [category.category_id],
+                (_, { rows: { _array } }) => {
+                  setFilteredTasks(_array)
+                  _array.map((task) => {
+                    if (task.tag_id) {
+                      db.transaction((tx) => {
+                        tx.executeSql('select * from tags where tag_id like ?;',
+                          [task.tag_id],
+                          (_, { rows: { _array } }) => setFilteredTags(_array),
+                          (_, error) => console.log(`???: ${error}`)
+                        )
+                      })
+                    }
+                  })
+                },
+                (_, error) => console.log(`hmmh: ${error}`)
+              )
+            })
+          })
+        }
+      }
+    } else {
+      console.log(selectedFilter);
+      //make the change
+      setFilteredTasks(null);
+      if (tasks) {
+        tasks.map((task) => {
+          if (task.priority) {
+            filters.push(`Prioridad: ${task.priority}`)
+            console.log(task.priority);
+          }
+        })
+      }
+      if (tags) {
+        tags.map((tag) => {
+          filters.push(`Etiqueta: ${tag.tag_name}`)
+        })
+      }
+      if (categories) {
+        categories.map((category) => {
+          filters.push(`Categoría: ${category.category_name}`)
+        })
+      }
+    }
+
+  }, [filteredTags, filteredTasks, filteredCategories])
 
   return (
     <View style={styles.container}>
@@ -140,6 +340,8 @@ export default function Home({ navigation }) {
             }}
             defaultButtonText={"Filtrar"}
             buttonStyle={styles.filter}
+            dropdownStyle={styles.filterDropdown}
+            dropdownBackgroundColor={'#fff'}
           />
         </View>
         <TouchableOpacity
@@ -161,16 +363,28 @@ export default function Home({ navigation }) {
         //task && tags && categories
         tasks ?
           isFocused ?
-            <SafeAreaView>
-              <ScrollView style={styles.scrollView} contentContainerStyle={{ padding: 15 }} >
-                <TaskComponent
-                  tasks={tasks}
-                  tags={tags}
-                  categories={categories}
-                  delete={pressedDelete}
-                />
-              </ScrollView>
-            </SafeAreaView>
+            selectedFilter != null ?
+              <SafeAreaView>
+                <ScrollView style={styles.scrollView} contentContainerStyle={{ padding: 15 }} >
+                  <TaskComponent
+                    tasks={filteredTasks}
+                    tags={tags}
+                    categories={categories}
+                    delete={pressedDelete}
+                  />
+                </ScrollView>
+              </SafeAreaView>
+              :
+              <SafeAreaView>
+                <ScrollView style={styles.scrollView} contentContainerStyle={{ padding: 15 }} >
+                  <TaskComponent
+                    tasks={tasks}
+                    tags={tags}
+                    categories={categories}
+                    delete={pressedDelete}
+                  />
+                </ScrollView>
+              </SafeAreaView>
             :
             <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
           :
@@ -238,6 +452,10 @@ const styles = StyleSheet.create({
     // borderRadius: 10,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
+  },
+  filterDropdown: {
+    height: 300,
+    borderRadius: 10,
   },
   filterRow: {
     display: 'flex',
