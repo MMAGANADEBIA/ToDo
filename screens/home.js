@@ -15,6 +15,7 @@ import TaskComponent from '../components/taskComponent.js';
 const db = SQLite.openDatabase('todo.db');
 
 export default function Home({ navigation }) {
+  //Importan state const to use.
   const [tasks, setTasks] = useState();
   const [categories, setCategories] = useState();
   const [tags, setTags] = useState();
@@ -24,8 +25,10 @@ export default function Home({ navigation }) {
   const [filteredTags, setFilteredTags] = useState();
   const [filteredCategories, setFilteredCategories] = useState();
 
+  //Const used to determinate if the screen is focused.
   const isFocused = useIsFocused()
 
+  //Create databases if not exists when app opens.
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
@@ -42,6 +45,10 @@ export default function Home({ navigation }) {
         'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
       )
     });
+  }, [])
+
+  //Get the local database data when screen is focused.
+  useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql('select * from tasks;',
         [],
@@ -66,7 +73,7 @@ export default function Home({ navigation }) {
     });
   }, [isFocused]);
 
-
+  //Get the local database data when screen is focused.
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql('select * from tasks;',
@@ -92,12 +99,14 @@ export default function Home({ navigation }) {
     });
   }, [isFocused])
 
+  //Set the daata in the satate const twice and set the filters for search the tasks.
   useEffect(() => {
     setTasks(tasks);
     setTags(tags);
     setCategories(categories);
     // console.log(categories);
-    //Set the filters
+
+    //Set the filters in case priority, tags or category lists exists in the filters array. 
     if (tasks) {
       tasks.map((task) => {
         if (task.priority) {
@@ -117,11 +126,13 @@ export default function Home({ navigation }) {
     }
   }, [tasks, tags, categories])
 
+  //Send the "clean" instrucction to the tasks module and then call the after clean.
   useEffect(() => {
     setPressedDelete(pressedDelete);
     afterClean();
   }, [pressedDelete])
 
+  //Send the instrucction to clean the tasks y and set the selected button to flase.
   const cleanTasks = () => {
     setPressedDelete(true);
   }
@@ -133,24 +144,27 @@ export default function Home({ navigation }) {
 
   useEffect(() => {
     //cuando cambia se ejecuta mucho
+
+    console.log("filtering");
+
     //Set the filters
-    if (tasks) {
-      tasks.map((task) => {
-        if (task.priority) {
-          filters.push(`Prioridad: ${task.priority}`)
-        }
-      })
-    }
-    if (tags) {
-      tags.map((tag) => {
-        filters.push(`Etiqueta: ${tag.tag_name}`)
-      })
-    }
-    if (categories) {
-      categories.map((category) => {
-        filters.push(`Lista: ${category.category_name}`)
-      })
-    }
+    // if (tasks) {
+    //   tasks.map((task) => {
+    //     if (task.priority) {
+    //       filters.push(`Prioridad: ${task.priority}`)
+    //     }
+    //   })
+    // }
+    // if (tags) {
+    //   tags.map((tag) => {
+    //     filters.push(`Etiqueta: ${tag.tag_name}`)
+    //   })
+    // }
+    // if (categories) {
+    //   categories.map((category) => {
+    //     filters.push(`Lista: ${category.category_name}`)
+    //   })
+    // }
 
     //Get the filter information
     if (selectedFilter) {
@@ -215,15 +229,15 @@ export default function Home({ navigation }) {
 
   useEffect(() => {
     //Set the filtered data
-    setFilteredTasks(filteredTasks);
-    setFilteredTags(filteredTags);
-    setFilteredCategories(filteredTags)
+    // setFilteredTasks(filteredTasks);
+    // setFilteredTags(filteredTags);
+    // setFilteredCategories(filteredTags)
 
     console.log(selectedFilter);
 
     //get the other data
     if (selectedFilter !== null) {
-      //PRIORITY
+      //BY PRIORITY
       if (filteredTasks) {
         if (selectedFilter.includes("Prioridad")) {
           filteredTasks.map((task) => {
@@ -251,7 +265,7 @@ export default function Home({ navigation }) {
         }
       }
 
-      //TAGS
+      //By TAGS
       if (filteredTags) {
         if (selectedFilter.includes("Etiqueta")) {
           filteredTags.map((tag) => {
@@ -265,9 +279,7 @@ export default function Home({ navigation }) {
                       db.transaction((tx) => {
                         tx.executeSql('select * from category_lists where category_id like ?;',
                           [task.category_id],
-                          (_, { rows: { _array } }) => setFilteredCategories(_array),
-                          (_, error) => console.log(`Problema: ${error}`)
-                        )
+                          (_, { rows: { _array } }) => setFilteredCategories(_array), (_, error) => console.log(`Problema: ${error}`))
                       })
                     }
                   })
@@ -279,7 +291,7 @@ export default function Home({ navigation }) {
         }
       }
 
-      //CATEGORIES
+      //BY CATEGORIES
       if (filteredCategories) {
         if (selectedFilter.includes("Lista")) {
           filteredCategories.map((category) => {
@@ -309,6 +321,28 @@ export default function Home({ navigation }) {
 
     } else {
       //reset filtered data and put the filters again
+      db.transaction((tx) => {
+        tx.executeSql('select * from tasks;',
+          [],
+          (_, { rows: { _array } }) => setTasks(_array),
+          (_, error) => console.log`Error: ${error}`
+        );
+      });
+      db.transaction((tx) => {
+        tx.executeSql(
+          'select * from tags;',
+          [],
+          (_, { rows: { _array } }) => setTags(_array),
+          (_, error) => console.log`Error: ${error}`
+        )
+      });
+      db.transaction((tx) => {
+        tx.executeSql('select * from category_lists;',
+          [],
+          (_, { rows: { _array } }) => setCategories(_array),
+          (_, error) => console.log`Error: ${error}`
+        );
+      });
       setFilteredTasks(null);
       if (tasks) {
         tasks.map((task) => {
@@ -328,7 +362,6 @@ export default function Home({ navigation }) {
         })
       }
     }
-
   }, [filteredTags, filteredTasks, filteredCategories])
 
   return (
