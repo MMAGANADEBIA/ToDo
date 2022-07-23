@@ -4,12 +4,16 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useState, useEffect } from 'react';
 import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 import * as SQLite from 'expo-sqlite';
+import { useTheme } from '@react-navigation/native';
 
 //open the sqlite database
 const db = SQLite.openDatabase('todo.db');
 
 export default function CategoryComponent(props) {
   const [categories, setCategories] = useState(props.categories);
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     setCategories(props.categories);
@@ -45,13 +49,13 @@ export default function CategoryComponent(props) {
         categories ?
           categories.map((category) => {
             return (
-              <View key={category.category_id} style={styles.categoryContainer}>
+              <View key={category.category_id} style={[styles.categoryContainer, { backgroundColor: colors.card }]}>
                 <View>
                   <Icon name="list" size={20} color={"blue"} />
                 </View>
                 <View style={styles.categoryContent}>
-                  <Text>{category.category_name}</Text>
-                  <Text style={styles.categoryDescription}>{category.description}</Text>
+                  <Text style={{ color: colors.text }}>{category.category_name}</Text>
+                  <Text style={[styles.categoryDescription, { color: colors.text }]}>{category.description}</Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => deleteCategory(category.category_id)}
@@ -75,7 +79,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     marginTop: 10,
     marginBottom: 10,
     elevation: 5,

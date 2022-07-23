@@ -2,9 +2,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, TouchableOpacity, Text, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import 'react-native-gesture-handler';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import * as SQLite from 'expo-sqlite';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, DefaultTheme, DarkTheme, useTheme } from '@react-navigation/native';
 import { List } from 'react-content-loader/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -28,8 +28,12 @@ export default function Home({ navigation }) {
   //Const used to determinate if the screen is focused.
   const isFocused = useIsFocused()
 
+  //colors from the theme selected
+  const { colors } = useTheme();
+
   //Create databases if not exists when app opens.
   useEffect(() => {
+    // console.log(colors.background);
     db.transaction((tx) => {
       tx.executeSql(
         'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);',
@@ -71,6 +75,7 @@ export default function Home({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
+    console.log(colors);
   }, [isFocused]);
 
   //Get the local database data when screen is focused.
@@ -326,13 +331,13 @@ export default function Home({ navigation }) {
   }, [filteredTags, filteredTasks, filteredCategories])
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
 
-      <StatusBar style="auto" />
+      <StatusBar style={`${colors.card == 'rgb(255, 255, 255)' ? 'dark' : 'light'}`} />
 
       <View style={styles.firstRowContainer}>
         <View style={styles.filterRow}>
-          <Icon name="filter" color={'#000'} size={20} style={styles.icon} />
+          <Icon name="filter" color={colors.text} size={20} style={[styles.icon, { backgroundColor: colors.card }]} />
           <SelectDropdown
             data={filters}
             onSelect={(selectedItem, index) => {
@@ -346,9 +351,10 @@ export default function Home({ navigation }) {
               return item;
             }}
             defaultButtonText={"Filtrar"}
-            buttonStyle={styles.filter}
+            buttonStyle={{ backgroundColor: colors.card, width: '75%', height: 40, borderTopRightRadius: 10, borderBottomRightRadius: 10 }}
             dropdownStyle={styles.filterDropdown}
             dropdownBackgroundColor={'#fff'}
+            buttonTextStyle={{ color: colors.text }}
           />
         </View>
         <TouchableOpacity
@@ -363,9 +369,8 @@ export default function Home({ navigation }) {
         style={styles.newTask}
         onPress={() => navigation.navigate('Nueva Tarea')}
       >
-        <Icon name="plus" size={60} color={'#00f'} />
+        <Icon name="plus" size={60} color={colors.primary} />
       </TouchableOpacity>
-
       {
         //task && tags && categories
         tasks ?
@@ -407,7 +412,7 @@ const styles = StyleSheet.create({
     // backgroundColor: '#f2f2f2',
     // backgroundColor: '#f2f7ff',
     // backgroundColor: '#EDF0FF',
-    backgroundColor: '#f9f9fa',
+    // backgroundColor: '#f9f9fa',
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
   },
@@ -417,18 +422,6 @@ const styles = StyleSheet.create({
     marginTop: '190%',
     elevation: 6,
     zIndex: 6,
-  },
-
-  drawerStyle: {
-    mainOverlay: {
-      backgroundColor: '#000',
-      opacity: 0,
-    },
-    backgroundColor: '#000',
-    color: '#fff',
-    shadowColor: '#000000',
-    shadowOpacity: 0.8,
-    shadowRadius: 3,
   },
   buttonText: {
     color: '#fff',
@@ -447,7 +440,7 @@ const styles = StyleSheet.create({
   icon: {
     // width: 60,
     // height: 60,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     // borderRadius: 10,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
@@ -457,11 +450,12 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   filter: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
+    // backgroundColor: 'colors.card',
     // elevation: 5,
+    // borderRadius: 10,
     width: '75%',
     height: 40,
-    // borderRadius: 10,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
   },

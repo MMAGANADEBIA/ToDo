@@ -4,12 +4,12 @@ import Checkbox from 'expo-checkbox';
 import { useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
-import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
+import { List } from 'react-content-loader/native';
+import { useTheme } from '@react-navigation/native';
+//themes
 
 //open sqlite database
 const db = SQLite.openDatabase('todo.db');
-
-let selectedBoxArray = [];
 
 export default function TaskComponent(props) {
   const [tasks, setTasks] = useState(props.task);
@@ -17,6 +17,9 @@ export default function TaskComponent(props) {
   const [categories, setCategories] = useState(props.categories);
   const [checkedList, setCheckedList] = useState([]);
   const [pressedDelete, setPressedDelete] = useState(props.delete);
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     setTasks(props.tasks);
@@ -30,7 +33,6 @@ export default function TaskComponent(props) {
     setTags(tags);
     setCategories(categories);
     setPressedDelete(pressedDelete);
-    // console.log(tasks);
     if (pressedDelete) {
       deleteTask();
     }
@@ -81,7 +83,7 @@ export default function TaskComponent(props) {
       {
         tasks ? tasks.map((task) => {
           return (
-            <View style={styles.checkboxContainer} key={task.task_id}>
+            <View style={[styles.checkboxContainer, { backgroundColor: colors.card }]} key={task.task_id}>
               <Checkbox
                 style={styles.checkbox}
                 // value={isChecked}
@@ -91,9 +93,9 @@ export default function TaskComponent(props) {
               <TouchableOpacity
                 onPress={editTask}
               >
-                <Text style={[styles.checkboxText, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
-                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description}</Text>
-                <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>Prioridad: {task.priority}</Text>
+                <Text style={[styles.checkboxText, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
+                <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description}</Text>
+                <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>Prioridad: {task.priority}</Text>
                 {/* <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.category_list}</Text> */}
                 <View>
                   {
@@ -101,7 +103,7 @@ export default function TaskComponent(props) {
                       if (category.category_id == task.category_id) {
                         return (
                           <View key={category.category_id}  >
-                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']} >Lista: {category.category_name}</Text>
+                            <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']} >Lista: {category.category_name}</Text>
                           </View>
                         );
                       }
@@ -114,8 +116,8 @@ export default function TaskComponent(props) {
                       if (tag.tag_id == task.tag_id) {
                         return (
                           <View key={tag.tag_id} style={styles.tagContainer}>
-                            <Icon name="tag" size={20} color={checkedList.includes(task.task_id) ? '#000' : tag.color} style={checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : ''} />
-                            <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '', styles.tagText]} >{tag.tag_name}</Text>
+                            <Icon name="tag" size={20} color={checkedList.includes(task.task_id) ? colors.notification : tag.color} style={checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : ''} />
+                            <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '', styles.tagText]} >{tag.tag_name}</Text>
                           </View>
                         );
                       }
@@ -135,7 +137,7 @@ export default function TaskComponent(props) {
 
 const styles = StyleSheet.create({
   container: {
-    color: '#fff',
+    // color: '#fff',
   },
   checkbox: {
     display: 'flex',
@@ -145,7 +147,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     marginBottom: 20,
-    backgroundColor: '#fff',
+    //used as my default
+    // backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     elevation: 5,

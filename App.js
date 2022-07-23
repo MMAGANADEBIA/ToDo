@@ -1,99 +1,137 @@
 //important modules
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createDrawerNavigator, DrawerItemList, DrawerItem, DrawerContentScrollView } from '@react-navigation/drawer';
-import { StyleSheet, Appearance } from 'react-native';
+import { NavigationContainer, DefaultTheme, DarkTheme, useTheme } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import 'react-native-gesture-handler';
 import Drawer from 'react-native-drawer';
-import { Provider } from 'react-redux';
 //Import screens
 import Home from './screens/home.js';
 import Task from './screens/task.js';
 import TagSystem from './screens/tagSystem.js';
 import ListCategory from './screens/listCategory.js';
-//import components
-import CustomDrawer from './components/customDrawerComponent.js';
-import configureStore from './redux-store/store.js';
+import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { useState } from 'react';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon'
+import { faSun } from '@fortawesome/free-solid-svg-icons/faSun';
+
+const themes = {
+  dark: {
+    dark: true,
+    colors: {
+      primary: DarkTheme.colors.primary,
+      background: DarkTheme.colors.background,
+      card: DarkTheme.colors.card,
+      text: DarkTheme.colors.text,
+      border: DarkTheme.colors.border,
+      notification: DarkTheme.colors.notification
+    }
+  },
+  ligth: {
+    dark: false,
+    colors: {
+      primary: DefaultTheme.colors.primary,
+      background: DefaultTheme.colors.background,
+      card: DefaultTheme.colors.card,
+      text: DefaultTheme.colors.text,
+      border: DefaultTheme.colors.border,
+      notification: DefaultTheme.colors.notification
+    }
+  }
+}
 
 export default function App() {
+  const [theme, setTheme] = useState(themes.ligth);
+
+  const CustomDrawer = (props) => {
+
+    const toggleTheme = () => {
+      theme.dark ? setTheme(themes.ligth) : setTheme(themes.dark)
+      // console.log(theme);
+    }
+
+    return (
+      <DrawerContentScrollView {...props} >
+        <DrawerItemList {...props} />
+        <View style={styles.customContent}>
+          <TouchableOpacity
+            onPress={toggleTheme}
+          >
+            {
+              theme.dark ?
+                <FontAwesomeIcon icon={faSun} color={'#fff'} size={30} />
+                :
+                <FontAwesomeIcon icon={faMoon} color={'#38434f'} size={30} />
+            }
+          </TouchableOpacity>
+        </View>
+      </DrawerContentScrollView>
+    );
+  }
+  //Create Drawer
   const Drawer = createDrawerNavigator();
-
-  //Drawer theme example
-  // const activeTheme = {
-  //   ...DefaultTheme,
-  //   colors: {
-  //     ...DefaultTheme.colors,
-  //     primary: 'rgb(255, 45, 85)',
-  //   },
-  // };
-
-  //initialize the store
-  const store = configureStore();
 
   return (
 
-    <Provider store={store} >
+    <NavigationContainer theme={theme} >
 
-      <NavigationContainer theme={DarkTheme} >
+      <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} theme={theme} />} >
 
-        <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} theme={DarkTheme} />} >
+        <Drawer.Screen
+          name='Tareas'
+          component={Home}
+          options={{
+            title: 'Tareas',
+            headerStyle: {
+              backgroundColor: theme.card,
+            },
+            headerTintColor: `${theme.dark ? '#fff' : 'rgb(28, 28, 30)'}`,
+          }}
+        />
+        <Drawer.Screen
+          name='Nueva Tarea'
+          component={Task}
+          options={{
+            title: 'Nueva tarea',
+            headerStyle: {
+              backgroundColor: theme.card,
+            },
+            headerTintColor: `${theme.dark ? '#fff' : 'rgb(28, 28, 30)'}`,
+          }}
+        />
+        <Drawer.Screen
+          name='Tags'
+          component={TagSystem}
+          options={{
+            title: 'Etiquetas',
+            headerStyle: {
+              backgroundColor: theme.card
+            },
+            headerTintColor: `${theme.dark ? '#fff' : 'rgb(28, 28, 30)'}`,
+          }}
+        />
+        <Drawer.Screen
+          name="Lista de Categorias"
+          component={ListCategory}
+          options={{
+            title: 'Listas',
+            headerStyle: {
+              backgroundColor: theme.card
+            },
+            headerTintColor: `${theme.dark ? '#fff' : 'rgb(28, 28, 30)'}`,
+          }}
+        />
 
-          <Drawer.Screen
-            name='Tareas'
-            component={Home}
-            options={{
-              title: 'Tareas',
-              headerStyle: {
-                backgroundColor: '#fefefe',
-              }
-            }}
-          />
-          <Drawer.Screen
-            name='Nueva Tarea'
-            component={Task}
-            options={{
-              title: 'Nueva tarea',
-              headerStyle: {
-                backgroundColor: '#fefefe'
-              },
-            }}
-          />
-          <Drawer.Screen
-            name='Tags'
-            component={TagSystem}
-            options={{
-              title: 'Etiquetas',
-              headerStyle: {
-                backgroundColor: '#fefefe'
-              },
-            }}
-          />
-          <Drawer.Screen
-            name="Lista de Categorias"
-            component={ListCategory}
-            options={{
-              title: 'Listas',
-              headerStyle: {
-                backgroundColor: '#fefefe'
-              }
-            }}
-          />
+      </Drawer.Navigator>
 
-        </Drawer.Navigator>
-
-      </NavigationContainer>
-
-    </Provider>
+    </NavigationContainer>
 
   );
 }
 
 const styles = StyleSheet.create({
-  drawerStyle: {
-    backgroundColor: '#000',
-    color: '#fff',
-    shadowColor: '#000000',
-    shadowOpacity: 0.8,
-    shadowRadius: 3,
+  customContent: {
+    marginLeft: 20,
+    marginTop: 20,
   }
 })

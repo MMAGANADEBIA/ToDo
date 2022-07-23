@@ -13,7 +13,7 @@ A ToDo app made with react native and expo with just the things you need.
 ## ToDo
 - [x] Black theme.
 - [x] Light theme.
-- [ ] BarStyle themed.
+- [x] BarStyle themed.
 - [ ] Select the last colors.
 
 ## Fixes

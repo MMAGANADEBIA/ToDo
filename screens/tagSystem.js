@@ -4,11 +4,12 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Dimensions,
 import { useState, useEffect } from 'react';
 import ColorPicker from 'react-native-wheel-color-picker';
 import AwesomeAlert from 'react-native-awesome-alerts';
-// import 'react-native-reanimated';
+import 'react-native-reanimated';
 import Modal from "react-native-modal";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
 import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
+import { useTheme } from '@react-navigation/native';
 //import components
 import TagComponent from '../components/tagComponent.js';
 //import icons
@@ -24,6 +25,9 @@ export default function TagSystem({ navigation }) {
   const [description, setDescription] = useState(null);
   const [showAlert, setShowalert] = useState(false);
   const [tags, setTags] = useState();
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -72,9 +76,9 @@ export default function TagSystem({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
 
-      <StatusBar style="auto" />
+      <StatusBar style={`${colors.card == 'rgb(255, 255, 255)' ? 'dark' : 'light'}`} />
 
       <View style={styles.firstRow}>
         <TouchableOpacity
@@ -105,17 +109,17 @@ export default function TagSystem({ navigation }) {
         />
       </View>
 
-      <Text style={styles.textLabel}>Nombre de la etiqueta</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Nombre de la etiqueta</Text>
       <TextInput
         onChangeText={(text) => setTagName(text)}
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         placeholder='Etiqueta'
         defaultValue={tagName}
       />
-      <Text style={styles.textLabel}>Descripción (opcional)</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Descripción (opcional)</Text>
       <TextInput
         placeholder='Descripción'
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         onChangeText={(text) => setDescription(text)}
       />
       <View style={styles.colors}>
@@ -127,7 +131,7 @@ export default function TagSystem({ navigation }) {
         </TouchableOpacity>
         {/*colores recientes*/}
         <View style={styles.tagContainer}>
-          <Icon name='tag' size={30} color={color} />
+          <Icon name='tag' size={30} color={color ? color : colors.text} />
           <Text style={styles.tagName} >{tagName}</Text>
         </View>
       </View>
@@ -208,7 +212,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 15,
-    backgroundColor: '#f9f9fa',
+    // backgroundColor: '#f9f9fa',
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
   },
@@ -222,11 +226,11 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: '#000',
+    // borderColor: '#000',
     borderRadius: 5,
     paddingLeft: 20,
     borderBottomWidth: 1.5,
-    backgroundColor: '#f2f2f2'
+    // backgroundColor: '#f2f2f2'
   },
   colorPickerBtn: {
     backgroundColor: 'green',

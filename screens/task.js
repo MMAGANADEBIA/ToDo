@@ -8,7 +8,7 @@ import RadioButtonRN from 'radio-buttons-react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import * as SQLite from 'expo-sqlite';
 import * as Notifications from 'expo-notifications';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useTheme } from '@react-navigation/native';
 //import images
 import Diskette from '../assets/icons/diskette.png';
 
@@ -32,6 +32,9 @@ export default function Task({ navigation }) {
   const isFocused = useIsFocused()
 
   const descriptionRef = useRef();
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -155,9 +158,9 @@ export default function Task({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.backgroundColor }]}>
 
-      <StatusBar style="auto" />
+      <StatusBar style={`${colors.card == 'rgb(255, 255, 255)' ? 'dark' : 'light'}`} />
 
       {/*SAVE AND CANCEL BUTTONS IN FIRST ROW OF SCREEN*/}
       <View style={styles.firstRowButtons}>
@@ -175,10 +178,11 @@ export default function Task({ navigation }) {
       </View>
 
       {/*TASK NAME*/}
-      <Text style={styles.textLabel}>Tarea</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Tarea</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         placeholder="Tarea"
+        placeholderTextColor={colors.border}
         returnKeyLabel='next'
         selectionColor={'#00000050'}
         onSubmitEditing={() => descriptionRef.current.focus()}
@@ -187,10 +191,11 @@ export default function Task({ navigation }) {
       />
 
       {/*DESCRIPTION INPUT*/}
-      <Text style={styles.textLabel} >Descripción (opcional)</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]} >Descripción (opcional)</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         placeholder="Descripción (opcional)"
+        placeholderTextColor={colors.border}
         returnKeyLabel='done'
         selectionColor={'#00000050'}
         editable={task ? true : false}
@@ -201,11 +206,11 @@ export default function Task({ navigation }) {
 
       {/*TAG SELECTOR MODAL*/}
       <View>
-        <Text style={styles.textLabel}>Etiqueta (opcional)</Text>
+        <Text style={[styles.textLabel, { color: colors.text }]}>Etiqueta (opcional)</Text>
         <ModalSelector
           data={formattedTags}
           supportedOrientations={['portrait']}
-          initValue={`${tagSelected ? tagSelected : 'Selecciona una etiqueta (opciona)'}`}
+          initValue={`${tagSelected ? tagSelected : 'Selecciona una etiqueta (opcional)'}`}
           onChange={(option) => {
             setTagSelected(option.label)
             setTagSelectedId(option.id)
@@ -213,27 +218,27 @@ export default function Task({ navigation }) {
           }
           cancelText="Cancelar"
           style={styles.modalSelector}
-          selectStyle={styles.selectStyle}
+          selectStyle={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
           //Text style of the options inside the modal
           optionTextStyle={styles.selectTextStyle}
           //Text in the square
-          initValueTextStyle={styles.selectTextStyle}
+          initValueTextStyle={{ color: colors.text }}
         />
       </View>
 
       {/*PRIORITY RADIO BUTTONS*/}
-      <Text style={styles.textLabel}>Prioridad (opcional)</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Prioridad (opcional)</Text>
       <RadioButtonRN
         data={priorityRadioButtons}
         selectedBtn={(element) => setPriority(element.label)}
         box={false}
         style={styles.radioButtons}
         boxStyle={styles.boxRadioStyle}
-        textStyle={styles.textRadioStyle}
+        textStyle={{ color: colors.text, textAlign: 'center' }}
       />
 
       {/*REMINDER INPUT AND MODAL*/}
-      <Text style={styles.textLabel}>Recordatorio (opcional)</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Recordatorio (opcional)</Text>
       <View style={styles.reminder}>
         <TouchableOpacity
           onPress={() => setTimeDateOpen(true)}
@@ -241,7 +246,7 @@ export default function Task({ navigation }) {
           <TextInput
             defaultValue={`${date ? date.toString().substr(0, 21) : 'Agregar recordatorio...'}`}
             editable={false}
-            style={styles.datePicker}
+            style={{color: colors.text}}
           />
         </TouchableOpacity>
         {
@@ -274,11 +279,11 @@ export default function Task({ navigation }) {
           }
           cancelText="Cancelar"
           style={styles.modalSelector}
-          selectStyle={styles.selectStyle}
+          selectStyle={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
           //Text style of the options inside the modal
           optionTextStyle={styles.selectTextStyle}
           //Text in the square
-          initValueTextStyle={styles.selectTextStyle}
+          initValueTextStyle={{ color: colors.text }}
         />
       </View>
 
@@ -304,7 +309,7 @@ export default function Task({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 15,
-    backgroundColor: '#f9f9fa',
+    // backgroundColor: '#f9f9fa',
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
   },
@@ -318,12 +323,12 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: '#000',
+    // borderColor: '#000',
     borderRadius: 5,
     // borderWidth: 1,
     paddingLeft: 20,
     borderBottomWidth: 1.5,
-    backgroundColor: '#f2f2f2'
+    // backgroundColor: '#f2f2f2'
   },
   textButton: {
     color: '#fff',
@@ -351,7 +356,7 @@ const styles = StyleSheet.create({
   datePicker: {
     // marginTop: 20,
     // marginBottom: 20,
-    color: '#000'
+    // color: '#000'
   },
   modalButton: {
     backgroundColor: 'red',
@@ -377,22 +382,19 @@ const styles = StyleSheet.create({
     alignItems: 'center'
     // backgroundColor: 'red',
   },
-  textRadioStyle: {
-    textAlign: 'center',
-  },
   optionContainerStyle: {
     backgroundColor: '#fff',
   },
   //modal border color.
-  selectStyle: {
-    borderColor: '#000',
-    color: '#000',
-  },
+  // selectStyle: {
+  //   borderColor: '#000',
+  //   color: '#000',
+  // },
   //modal inside text.
-  selectTextStyle: {
-    color: '#000',
-    // backgroundColor: '#fff',
-  },
+  // selectTextStyle: {
+  //   color: '#000',
+  // backgroundColor: '#fff',
+  // },
   reminder: {
     display: 'flex',
     flexDirection: 'row',

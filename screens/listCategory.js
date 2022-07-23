@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SQLite from 'expo-sqlite';
 import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import { useTheme } from '@react-navigation/native';
 //import images
 import Diskette from '../assets/icons/diskette.png';
 import { useState, useRef, useEffect } from 'react';
@@ -20,6 +21,9 @@ export default function ListCategorySystem({ navigation }) {
   const [showAlert, setShowalert] = useState(false);
 
   const descriptionRef = useRef();
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -65,8 +69,9 @@ export default function ListCategorySystem({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+
+      <StatusBar style={`${colors.card == 'rgb(255, 255, 255)' ? 'dark' : 'light'}`} />
 
       <View style={styles.firstRow}>
 
@@ -85,9 +90,9 @@ export default function ListCategorySystem({ navigation }) {
 
       </View>
 
-      <Text style={styles.textLabel}>Nombre de categoría</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Nombre de categoría</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         selectionColor={'#00000050'}
         returnKeyLabel='next'
         onSubmitEditing={() => descriptionRef.current.focus()}
@@ -96,9 +101,9 @@ export default function ListCategorySystem({ navigation }) {
         onChangeText={(text) => setCategory(text)}
       />
 
-      <Text style={styles.textLabel}>Descripción de categoría (opcional)</Text>
+      <Text style={[styles.textLabel, { color: colors.text }]}>Descripción de categoría (opcional)</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
         selectionColor={'#00000050'}
         returnKeyLabel='done'
         editable={category ? true : false}
@@ -142,7 +147,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 15,
-    backgroundColor: '#f9f9fa',
+    // backgroundColor: '#f9f9fa',
     height: Dimensions.get('window').height,
     width: Dimensions.get('window').width,
   },
@@ -168,11 +173,11 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: '#000',
+    // borderColor: '#000',
     borderRadius: 5,
     paddingLeft: 20,
     borderBottomWidth: 1.5,
-    backgroundColor: '#f2f2f2'
+    // backgroundColor: '#f2f2f2'
   },
   categoryList: {
     display: 'flex',

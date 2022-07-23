@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
+import { useTheme } from '@react-navigation/native';
 //import icons
 
 //open sqlite database
@@ -10,6 +11,9 @@ const db = SQLite.openDatabase('todo.db');
 
 export default function TagComponent(props) {
   const [tags, setTags] = useState(props.tags);
+
+  //colors from the theme selected
+  const { colors } = useTheme();
 
   useEffect(() => {
     setTags(props.tags)
@@ -45,11 +49,11 @@ export default function TagComponent(props) {
       {
         tags ? tags.map((tag) => {
           return (
-            <View key={tag.tag_id} style={styles.component}>
+            <View key={tag.tag_id} style={[styles.component, { backgroundColor: colors.card }]}>
               <Icon name='tag' size={30} color={tag.color} />
               <View>
-                <Text style={styles.tagText}>{tag.tag_name}</Text>
-                <Text style={styles.tagText}>{tag.description}</Text>
+                <Text style={[styles.tagText, { color: colors.text }]}>{tag.tag_name}</Text>
+                <Text style={[styles.tagText, { color: colors.text }]}>{tag.description}</Text>
               </View>
               <TouchableOpacity
                 style={styles.deleteButton}
@@ -72,7 +76,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 10,
     borderRadius: 10,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     // borderWidth: 1,
     marginTop: 10,
     marginBottom: 10,
