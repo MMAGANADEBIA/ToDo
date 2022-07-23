@@ -78,7 +78,6 @@ export default function TaskComponent(props) {
 
   return (
     <View style={styles.container}>
-
       {
         tasks ? tasks.map((task) => {
           return (

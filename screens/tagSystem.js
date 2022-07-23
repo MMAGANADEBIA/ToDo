@@ -1,6 +1,6 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, TextInput, Dimensions, SafeAreaView, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 import ColorPicker from 'react-native-wheel-color-picker';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -8,7 +8,7 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import Modal from "react-native-modal";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 //import components
 import TagComponent from '../components/tagComponent.js';
 //import icons
@@ -63,7 +63,6 @@ export default function TagSystem({ navigation }) {
     } else {
       setShowalert(true);
     }
-    // navigation.navigate("Tareas")
   }
 
   const handleCancel = () => {
@@ -88,7 +87,7 @@ export default function TagSystem({ navigation }) {
           onPress={handleCancel}
           style={styles.cancelTag}
         >
-          <Text style={styles.buttonText}>Cancelar</Text>
+          <Text style={styles.buttonText}>Atrás</Text>
         </TouchableOpacity>
 
         <AwesomeAlert
@@ -135,7 +134,11 @@ export default function TagSystem({ navigation }) {
 
       {
         tags ?
-          <TagComponent tags={tags} />
+          <SafeAreaView>
+            <ScrollView style={styles.scroll} contentContainerStyle={{ padding: 15 }} >
+              <TagComponent tags={tags} />
+            </ScrollView>
+          </SafeAreaView>
           :
           <ContentLoader viewBox="0 0 380 70">
             <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
@@ -204,8 +207,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   container: {
-    backgroundColor: '#ffffff',
     padding: 15,
+    backgroundColor: '#f9f9fa',
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
   },
   icon: {
     width: 30,
@@ -282,5 +287,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
     display: 'flex',
     flexDirection: 'row',
+  },
+  scroll: {
+    height: '90%'
   }
 });

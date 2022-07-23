@@ -1,6 +1,6 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native'
 import { useState, useRef, useEffect } from 'react';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ModalSelector from 'react-native-modal-selector';
@@ -304,7 +304,9 @@ export default function Task({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 15,
-    backgroundColor: '#ffffff'
+    backgroundColor: '#f9f9fa',
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
   },
   icon: {
     width: 30,

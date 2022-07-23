@@ -1,5 +1,5 @@
 //important modules
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
@@ -13,7 +13,6 @@ export default function TagComponent(props) {
 
   useEffect(() => {
     setTags(props.tags)
-    console.log(tags);
   }, [props.tags])
 
   useEffect(() => {
@@ -42,30 +41,28 @@ export default function TagComponent(props) {
   }
 
   return (
-    <SafeAreaView>
-      <ScrollView>
-        {
-          tags ? tags.map((tag) => {
-            return (
-              <View key={tag.tag_id} style={styles.component}>
-                <Icon name='tag' size={30} color={tag.color} />
-                <View>
-                  <Text style={styles.tagText}>{tag.tag_name}</Text>
-                  <Text style={styles.tagText}>{tag.description}</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => deleteTag(tag.tag_id)}
-                >
-                  <Icon name="trash" size={30} color={'red'} />
-                </TouchableOpacity>
+    <View>
+      {
+        tags ? tags.map((tag) => {
+          return (
+            <View key={tag.tag_id} style={styles.component}>
+              <Icon name='tag' size={30} color={tag.color} />
+              <View>
+                <Text style={styles.tagText}>{tag.tag_name}</Text>
+                <Text style={styles.tagText}>{tag.description}</Text>
               </View>
-            )
-          })
-            : <Text>Sin etiquetas.</Text>
-        }
-      </ScrollView>
-    </SafeAreaView>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deleteTag(tag.tag_id)}
+              >
+                <Icon name="trash" size={30} color={'red'} />
+              </TouchableOpacity>
+            </View>
+          )
+        })
+          : <Text>Sin etiquetas.</Text>
+      }
+    </View>
   );
 }
 
@@ -76,9 +73,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: '#fff',
-    borderWidth: 1,
+    // borderWidth: 1,
     marginTop: 10,
     marginBottom: 10,
+    elevation: 5,
   },
   tagText: {
     marginLeft: 10,

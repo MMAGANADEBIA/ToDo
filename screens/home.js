@@ -1,11 +1,11 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, TouchableOpacity, Image, Text, ScrollView, SafeAreaView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import 'react-native-gesture-handler';
 import { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
-import ContentLoader, { Rect, Circle, BulletList, List } from 'react-content-loader/native';
+import { List } from 'react-content-loader/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from 'react-native-select-dropdown';
 //import components
@@ -201,23 +201,6 @@ export default function Home({ navigation }) {
         //make the change
         setSelectedFilter(null)
         setFilteredTasks(null);
-        if (tasks) {
-          tasks.map((task) => {
-            if (task.priority) {
-              filters.push(`Prioridad: ${task.priority}`)
-            }
-          })
-        }
-        if (tags) {
-          tags.map((tag) => {
-            filters.push(`Etiqueta: ${tag.tag_name}`)
-          })
-        }
-        if (categories) {
-          categories.map((category) => {
-            filters.push(`Lista: ${category.category_name}`)
-          })
-        }
       }
     } else {
       //make the change
@@ -318,31 +301,9 @@ export default function Home({ navigation }) {
           })
         }
       }
-
     } else {
       //reset filtered data and put the filters again
-      db.transaction((tx) => {
-        tx.executeSql('select * from tasks;',
-          [],
-          (_, { rows: { _array } }) => setTasks(_array),
-          (_, error) => console.log`Error: ${error}`
-        );
-      });
-      db.transaction((tx) => {
-        tx.executeSql(
-          'select * from tags;',
-          [],
-          (_, { rows: { _array } }) => setTags(_array),
-          (_, error) => console.log`Error: ${error}`
-        )
-      });
-      db.transaction((tx) => {
-        tx.executeSql('select * from category_lists;',
-          [],
-          (_, { rows: { _array } }) => setCategories(_array),
-          (_, error) => console.log`Error: ${error}`
-        );
-      });
+
       setFilteredTasks(null);
       if (tasks) {
         tasks.map((task) => {
@@ -368,6 +329,7 @@ export default function Home({ navigation }) {
     <View style={styles.container}>
 
       <StatusBar style="auto" />
+
       <View style={styles.firstRowContainer}>
         <View style={styles.filterRow}>
           <Icon name="filter" color={'#000'} size={20} style={styles.icon} />
@@ -442,7 +404,12 @@ export default function Home({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 15,
-    // backgroundColor: '#fff',
+    // backgroundColor: '#f2f2f2',
+    // backgroundColor: '#f2f7ff',
+    // backgroundColor: '#EDF0FF',
+    backgroundColor: '#f9f9fa',
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
   },
   newTask: {
     position: 'absolute',
@@ -521,7 +488,6 @@ const styles = StyleSheet.create({
   scrollView: {
     height: '92%',
     // padding: 15,
-    // backgroundColor: 'red',
     // borderRadius: 10,
     // clipToPadding: 'false',
     // zIndex: 1,

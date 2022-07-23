@@ -2,7 +2,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useState, useEffect } from 'react';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 import * as SQLite from 'expo-sqlite';
 
 //open the sqlite database
@@ -63,11 +63,7 @@ export default function CategoryComponent(props) {
             )
           })
           :
-          <ContentLoader viewBox="0 0 380 70">
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-          </ContentLoader>
+          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
       }
     </View>
   );
@@ -75,15 +71,14 @@ export default function CategoryComponent(props) {
 
 const styles = StyleSheet.create({
   categoryContainer: {
-    marginTop: 10,
-    marginBottom: 10,
     display: 'flex',
     flexDirection: 'row',
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#000',
-    // backgroundColor: 'red',
+    backgroundColor: '#fff',
+    marginTop: 10,
+    marginBottom: 10,
+    elevation: 5,
   },
   categoryContent: {
     marginLeft: 10,

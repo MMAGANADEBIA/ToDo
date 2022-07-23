@@ -1,8 +1,8 @@
 //important modules
-import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput, Dimensions, SafeAreaView, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SQLite from 'expo-sqlite';
-import ContentLoader, { Rect, Circle } from 'react-content-loader/native';
+import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 //import images
 import Diskette from '../assets/icons/diskette.png';
@@ -22,11 +22,6 @@ export default function ListCategorySystem({ navigation }) {
   const descriptionRef = useRef();
 
   useEffect(() => {
-    // db.transaction((tx) => {
-    //   tx.executeSql(
-    //     'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
-    //   )
-    // });
     db.transaction((tx) => {
       tx.executeSql('select * from category_lists;',
         [],
@@ -38,7 +33,6 @@ export default function ListCategorySystem({ navigation }) {
 
   useEffect(() => {
     setCategories(categories);
-    console.log(categories);
   }, [categories])
 
   const handleCancel = () => {
@@ -68,15 +62,6 @@ export default function ListCategorySystem({ navigation }) {
     } else {
       setShowalert(true);
     }
-    // db.transaction((tx) => {
-    //   tx.executeSql('select * from category_lists;',
-    //     [],
-    //     (_, { rows: { _array } }) => setCategories(_array),
-    //     (_, error) => console.log`Error: ${error}`
-    //   );
-    // });
-    // update();
-    // navigation.navigate("Tareas");
   }
 
   return (
@@ -95,7 +80,7 @@ export default function ListCategorySystem({ navigation }) {
           onPress={handleCancel}
           style={styles.redButton}
         >
-          <Text style={styles.buttonText}>Cancelar</Text>
+          <Text style={styles.buttonText}>Atrás</Text>
         </TouchableOpacity>
 
       </View>
@@ -124,13 +109,13 @@ export default function ListCategorySystem({ navigation }) {
 
       {
         categories ?
-          <CategoryComponent categories={categories} />
+          <SafeAreaView>
+            <ScrollView style={styles.scroll} contentContainerStyle={{ padding: 15 }} >
+              <CategoryComponent categories={categories} />
+            </ScrollView>
+          </SafeAreaView>
           :
-          <ContentLoader viewBox="0 0 380 70">
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-          </ContentLoader>
+          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
       }
       <AwesomeAlert
         show={showAlert}
@@ -157,7 +142,9 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9fa',
+    height: Dimensions.get('window').height,
+    width: Dimensions.get('window').width,
   },
   icon: {
     width: 30,
@@ -165,8 +152,8 @@ const styles = StyleSheet.create({
   },
   redButton: {
     backgroundColor: 'red',
-    height: 50,
-    width: 100,
+    height: 40,
+    width: 80,
     borderRadius: 10,
     display: 'flex',
     justifyContent: 'center',
@@ -191,4 +178,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
   },
+  scroll: {
+    height: '90%'
+  }
 })
