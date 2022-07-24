@@ -17,6 +17,6 @@ A ToDo app made with react native and expo with just the things you need.
 - [ ] Select the last colors.
 
 ## Fixes
-- [ ] Many renders in filter.
+- [x] Many renders in filter.
 - [ ] Show filters (without many renders) when filter.
 - [x] Set the correct position of lists and tags loaders. 

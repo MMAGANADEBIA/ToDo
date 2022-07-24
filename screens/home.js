@@ -152,23 +152,23 @@ export default function Home({ navigation }) {
     console.log("filtering");
 
     //Set the filters
-    // if (tasks) {
-    //   tasks.map((task) => {
-    //     if (task.priority) {
-    //       filters.push(`Prioridad: ${task.priority}`)
-    //     }
-    //   })
-    // }
-    // if (tags) {
-    //   tags.map((tag) => {
-    //     filters.push(`Etiqueta: ${tag.tag_name}`)
-    //   })
-    // }
-    // if (categories) {
-    //   categories.map((category) => {
-    //     filters.push(`Lista: ${category.category_name}`)
-    //   })
-    // }
+    if (tasks) {
+      tasks.map((task) => {
+        if (task.priority) {
+          filters.push(`Prioridad: ${task.priority}`)
+        }
+      })
+    }
+    if (tags) {
+      tags.map((tag) => {
+        filters.push(`Etiqueta: ${tag.tag_name}`)
+      })
+    }
+    if (categories) {
+      categories.map((category) => {
+        filters.push(`Lista: ${category.category_name}`)
+      })
+    }
 
     //Get the filter information
     if (selectedFilter) {
@@ -182,6 +182,10 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`hay un: ${error}`)
             );
           });
+          tags.map((tag) => {
+            filters.push(`Etiqueta: ${tag.tag_name}`)
+          })
+
         }
         if (selectedFilter.includes("Prioridad")) {
           db.transaction((tx) => {
@@ -191,6 +195,11 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`Existe un: ${error}`)
             );
           });
+          tasks.map((task) => {
+            if (task.priority) {
+              filters.push(`Prioridad: ${task.priority}`)
+            }
+          })
         }
         if (selectedFilter.includes("Lista")) {
           db.transaction((tx) => {
@@ -200,6 +209,9 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`problema o que?: ${error}`)
             );
           });
+          categories.map((category) => {
+            filters.push(`Lista: ${category.category_name}`)
+          })
         }
       } else {
         //make the change
@@ -219,7 +231,6 @@ export default function Home({ navigation }) {
     // setFilteredTasks(filteredTasks);
     // setFilteredTags(filteredTags);
     // setFilteredCategories(filteredTags)
-
     console.log(selectedFilter);
 
     //get the other data
@@ -307,7 +318,6 @@ export default function Home({ navigation }) {
       }
     } else {
       //reset filtered data and put the filters again
-
       setFilteredTasks(null);
       if (tasks) {
         tasks.map((task) => {
@@ -327,7 +337,8 @@ export default function Home({ navigation }) {
         })
       }
     }
-  }, [filteredTags, filteredTasks, filteredCategories])
+    // filteredTags, filteredTasks, filteredCategories
+  }, [selectedFilter])
 
   return (
     <View style={[styles.container]}>
