@@ -347,9 +347,11 @@ export default function Home({ navigation }) {
             }}
             defaultButtonText={"Filtrar"}
             buttonStyle={{ backgroundColor: colors.card, width: '75%', height: 40, borderTopRightRadius: 10, borderBottomRightRadius: 10 }}
-            dropdownStyle={styles.filterDropdown}
-            dropdownBackgroundColor={'#fff'}
             buttonTextStyle={{ color: colors.text }}
+            dropdownStyle={{ backgroundColor: colors.card, height: 300, borderRadius: 10 }}
+            rowTextStyle={{ color: colors.text }}
+            rowStyle={{ borderBottomColor: colors.border }}
+            statusBarTranslucent={true}
           />
         </View>
         <TouchableOpacity
@@ -454,10 +456,10 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
   },
-  filterDropdown: {
-    height: 300,
-    borderRadius: 10,
-  },
+  // filterDropdown: {
+  //   height: 300,
+  //   borderRadius: 10,
+  // },
   filterRow: {
     display: 'flex',
     flexDirection: 'row',
