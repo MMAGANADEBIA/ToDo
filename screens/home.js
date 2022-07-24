@@ -213,7 +213,7 @@ export default function Home({ navigation }) {
   }, [selectedFilter])
 
   useEffect(() => {
-    console.log(selectedFilter);
+    console.log("a ver");
     //Get and filter the data
     if (selectedFilter !== null) {
       //BY PRIORITY
@@ -297,37 +297,33 @@ export default function Home({ navigation }) {
           })
         }
       }
-
     } else {
-      //reset filtered data and put the filters again
+      //reset filtered data
       setFilteredTasks(null);
-      if (tasks) {
-        tasks.map((task) => {
-          if (task.priority) {
-            filters.push(`Prioridad: ${task.priority}`)
-          }
-        })
-      }
-      if (tags) {
-        tags.map((tag) => {
-          filters.push(`Etiqueta: ${tag.tag_name}`)
-        })
-      }
-      if (categories) {
-        categories.map((category) => {
-          filters.push(`Lista: ${category.category_name}`)
-        })
-      }
     }
     // filteredTags, filteredTasks, filteredCategories
   }, [selectedFilter, filteredTags, filteredCategories])
 
-  // useEffect(() => {
-  //   console.log("useEffect");
-  //   setFilteredTasks(filteredTasks);
-  //   setFilteredCategories(filteredCategories);
-  //   setFilteredTags(filteredTags);
-  // }, [filteredTasks, filteredTags, filteredCategories])
+  useEffect(() => {
+    console.log("add new filters when filter");
+    if (tasks) {
+      tasks.map((task) => {
+        if (task.priority) {
+          filters.push(`Prioridad: ${task.priority}`)
+        }
+      })
+    }
+    if (tags) {
+      tags.map((tag) => {
+        filters.push(`Etiqueta: ${tag.tag_name}`)
+      })
+    }
+    if (categories) {
+      categories.map((category) => {
+        filters.push(`Lista: ${category.category_name}`)
+      })
+    }
+  }, [filteredTasks])
 
   return (
     <View style={[styles.container]}>
