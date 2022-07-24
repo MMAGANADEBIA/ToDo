@@ -75,7 +75,6 @@ export default function Home({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-    console.log(colors);
   }, [isFocused]);
 
   //Get the local database data when screen is focused.
@@ -398,9 +397,9 @@ export default function Home({ navigation }) {
                 </ScrollView>
               </SafeAreaView>
             :
-            <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
+            <List backgroundColor={colors.background} foregroundColor={colors.card} style={styles.loader} />
           :
-          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
+          <List backgroundColor={colors.background} foregroundColor={colors.card} style={styles.loader} />
       }
     </View>
   );
