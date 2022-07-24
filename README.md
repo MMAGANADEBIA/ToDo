@@ -19,4 +19,4 @@ A ToDo app made with react native and expo with just the things you need.
 ## Fixes
 - [ ] Many renders in filter.
 - [ ] Show filters (without many renders) when filter.
-- [ ] Set the correct position of lists and tags loaders. 
+- [x] Set the correct position of lists and tags loaders. 
