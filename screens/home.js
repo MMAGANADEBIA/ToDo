@@ -103,11 +103,11 @@ export default function Home({ navigation }) {
     });
   }, [isFocused])
 
-  //Set the daata in the satate const twice and set the filters for search the tasks.
+  //Set the daata in the state const twice and set the filters for search the tasks.
   useEffect(() => {
-    setTasks(tasks);
-    setTags(tags);
-    setCategories(categories);
+    // setTasks(tasks);
+    // setTags(tags);
+    // setCategories(categories);
     // console.log(categories);
 
     //Set the filters in case priority, tags or category lists exists in the filters array. 
@@ -147,28 +147,7 @@ export default function Home({ navigation }) {
   let filters = ["Sin filtrar"];
 
   useEffect(() => {
-    //cuando cambia se ejecuta mucho
-
     console.log("filtering");
-
-    //Set the filters
-    if (tasks) {
-      tasks.map((task) => {
-        if (task.priority) {
-          filters.push(`Prioridad: ${task.priority}`)
-        }
-      })
-    }
-    if (tags) {
-      tags.map((tag) => {
-        filters.push(`Etiqueta: ${tag.tag_name}`)
-      })
-    }
-    if (categories) {
-      categories.map((category) => {
-        filters.push(`Lista: ${category.category_name}`)
-      })
-    }
 
     //Get the filter information
     if (selectedFilter) {
@@ -182,10 +161,6 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`hay un: ${error}`)
             );
           });
-          tags.map((tag) => {
-            filters.push(`Etiqueta: ${tag.tag_name}`)
-          })
-
         }
         if (selectedFilter.includes("Prioridad")) {
           db.transaction((tx) => {
@@ -195,11 +170,6 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`Existe un: ${error}`)
             );
           });
-          tasks.map((task) => {
-            if (task.priority) {
-              filters.push(`Prioridad: ${task.priority}`)
-            }
-          })
         }
         if (selectedFilter.includes("Lista")) {
           db.transaction((tx) => {
@@ -209,10 +179,26 @@ export default function Home({ navigation }) {
               (_, error) => console.log(`problema o que?: ${error}`)
             );
           });
+        }
+
+        if (tasks) {
+          tasks.map((task) => {
+            if (task.priority) {
+              filters.push(`Prioridad: ${task.priority}`)
+            }
+          })
+        }
+        if (tags) {
+          tags.map((tag) => {
+            filters.push(`Etiqueta: ${tag.tag_name}`)
+          })
+        }
+        if (categories) {
           categories.map((category) => {
             filters.push(`Lista: ${category.category_name}`)
           })
         }
+
       } else {
         //make the change
         setSelectedFilter(null)
@@ -227,13 +213,8 @@ export default function Home({ navigation }) {
   }, [selectedFilter])
 
   useEffect(() => {
-    //Set the filtered data
-    // setFilteredTasks(filteredTasks);
-    // setFilteredTags(filteredTags);
-    // setFilteredCategories(filteredTags)
     console.log(selectedFilter);
-
-    //get the other data
+    //Get and filter the data
     if (selectedFilter !== null) {
       //BY PRIORITY
       if (filteredTasks) {
@@ -316,6 +297,7 @@ export default function Home({ navigation }) {
           })
         }
       }
+
     } else {
       //reset filtered data and put the filters again
       setFilteredTasks(null);
@@ -338,7 +320,14 @@ export default function Home({ navigation }) {
       }
     }
     // filteredTags, filteredTasks, filteredCategories
-  }, [selectedFilter])
+  }, [selectedFilter, filteredTags, filteredCategories])
+
+  // useEffect(() => {
+  //   console.log("useEffect");
+  //   setFilteredTasks(filteredTasks);
+  //   setFilteredCategories(filteredCategories);
+  //   setFilteredTags(filteredTags);
+  // }, [filteredTasks, filteredTags, filteredCategories])
 
   return (
     <View style={[styles.container]}>
