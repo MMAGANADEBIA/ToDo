@@ -8,7 +8,7 @@ import 'react-native-reanimated';
 import Modal from "react-native-modal";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
-import ContentLoader, { Rect, Circle, List } from 'react-content-loader/native';
+import { List } from 'react-content-loader/native';
 import { useTheme } from '@react-navigation/native';
 //import components
 import TagComponent from '../components/tagComponent.js';
@@ -144,11 +144,7 @@ export default function TagSystem({ navigation }) {
             </ScrollView>
           </SafeAreaView>
           :
-          <ContentLoader viewBox="0 0 380 70">
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-            <Rect x="80" y="17" rx="4" ry="4" width="300" height="30" />
-          </ContentLoader>
+          <List backgroundColor={colors.background} foregroundColor={colors.card} style={styles.loader} />
       }
 
       <Modal
@@ -294,5 +290,8 @@ const styles = StyleSheet.create({
   },
   scroll: {
     height: '90%'
+  },
+  loader: {
+    marginTop: 20,
   }
 });
