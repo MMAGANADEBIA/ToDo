@@ -27,7 +27,7 @@ const themes = {
       notification: DarkTheme.colors.notification
     }
   },
-  ligth: {
+  light: {
     dark: false,
     colors: {
       primary: DefaultTheme.colors.primary,
@@ -41,13 +41,12 @@ const themes = {
 }
 
 export default function App() {
-  const [theme, setTheme] = useState(themes.ligth);
+  const [theme, setTheme] = useState(themes.light);
 
   const CustomDrawer = (props) => {
 
     const toggleTheme = () => {
-      theme.dark ? setTheme(themes.ligth) : setTheme(themes.dark)
-      // console.log(theme);
+      theme.dark ? setTheme(themes.light) : setTheme(themes.dark)
     }
 
     return (
