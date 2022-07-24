@@ -78,6 +78,18 @@ export default function TaskComponent(props) {
     });
   }
 
+  const description = (task) => {
+    if (task.description) {
+      return (<Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description ? task.description : ''}</Text>);
+    }
+  }
+
+  const priority = (task) => {
+    if (task.priority) {
+      return (<Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>Prioridad: {task.priority}</Text>);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {
@@ -94,9 +106,8 @@ export default function TaskComponent(props) {
                 onPress={editTask}
               >
                 <Text style={[styles.checkboxText, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
-                <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.description}</Text>
-                <Text style={[styles.description, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>Prioridad: {task.priority}</Text>
-                {/* <Text style={[styles.description, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.category_list}</Text> */}
+                {description(task)}
+                {priority(task)}
                 <View>
                   {
                     categories.map((category) => {
