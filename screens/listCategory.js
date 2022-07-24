@@ -120,7 +120,7 @@ export default function ListCategorySystem({ navigation }) {
             </ScrollView>
           </SafeAreaView>
           :
-          <List backgroundColor='#fff' foregroundColor='#dff' style={styles.loader} />
+          <List backgroundColor={colors.background} foregroundColor={colors.card} style={styles.loader} />
       }
       <AwesomeAlert
         show={showAlert}
@@ -185,5 +185,8 @@ const styles = StyleSheet.create({
   },
   scroll: {
     height: '90%'
+  },
+  loader: {
+    marginTop: 20,
   }
 })
