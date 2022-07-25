@@ -2,9 +2,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, TouchableOpacity, Text, ScrollView, SafeAreaView, Dimensions } from 'react-native';
 import 'react-native-gesture-handler';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
-import { useIsFocused, DefaultTheme, DarkTheme, useTheme } from '@react-navigation/native';
+import { useIsFocused, useTheme } from '@react-navigation/native';
 import { List } from 'react-content-loader/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SelectDropdown from 'react-native-select-dropdown';
@@ -33,7 +33,6 @@ export default function Home({ navigation }) {
 
   //Create databases if not exists when app opens.
   useEffect(() => {
-    // console.log(colors.background);
     db.transaction((tx) => {
       tx.executeSql(
         'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);',
@@ -103,13 +102,7 @@ export default function Home({ navigation }) {
     });
   }, [isFocused])
 
-  //Set the daata in the state const twice and set the filters for search the tasks.
   useEffect(() => {
-    // setTasks(tasks);
-    // setTags(tags);
-    // setCategories(categories);
-    // console.log(categories);
-
     //Set the filters in case priority, tags or category lists exists in the filters array. 
     if (tasks) {
       tasks.map((task) => {
@@ -147,8 +140,6 @@ export default function Home({ navigation }) {
   let filters = ["Sin filtrar"];
 
   useEffect(() => {
-    console.log("filtering");
-
     //Get the filter information
     if (selectedFilter) {
       if (selectedFilter.includes(":")) {
@@ -213,7 +204,6 @@ export default function Home({ navigation }) {
   }, [selectedFilter])
 
   useEffect(() => {
-    console.log("a ver");
     //Get and filter the data
     if (selectedFilter !== null) {
       //BY PRIORITY
@@ -305,7 +295,6 @@ export default function Home({ navigation }) {
   }, [selectedFilter, filteredTags, filteredCategories])
 
   useEffect(() => {
-    console.log("add new filters when filter");
     if (tasks) {
       tasks.map((task) => {
         if (task.priority) {
@@ -323,7 +312,7 @@ export default function Home({ navigation }) {
         filters.push(`Lista: ${category.category_name}`)
       })
     }
-  }, [filteredTasks])
+  }, [filteredTasks, colors])
 
   return (
     <View style={[styles.container]}>
