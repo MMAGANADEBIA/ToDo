@@ -15,7 +15,8 @@ import Diskette from '../assets/icons/diskette.png';
 //open the sqlite database
 const db = SQLite.openDatabase('todo.db');
 
-export default function Task({ navigation }) {
+export default function Task({ navigation, route }) {
+  //New task state constants.
   const [task, setTask] = useState(null);
   const [description, setDescription] = useState(null);
   const [showAlert, setShowalert] = useState(false);
@@ -29,14 +30,17 @@ export default function Task({ navigation }) {
   const [categorySelected, setCategorieSelected] = useState(null);
   const [categorySelectedId, setCategorieSelectedId] = useState(null)
 
+  //Check if the screen is focused.
   const isFocused = useIsFocused()
 
+  //Const used to relate the inputs and change to next one with the insert key.
   const descriptionRef = useRef();
 
   //colors from the theme selected
   const { colors } = useTheme();
 
   useEffect(() => {
+    //Create the tables of tags and list categories if not exists.
     db.transaction((tx) => {
       tx.executeSql(
         'create table if not exists tags(tag_id integer primary key autoincrement, tag_name text not null, description text, color text not null);'
@@ -47,6 +51,7 @@ export default function Task({ navigation }) {
         'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
       )
     });
+    //Get the tag and category list data.
     db.transaction((tx) => {
       tx.executeSql(
         'select * from tags;',
@@ -62,12 +67,28 @@ export default function Task({ navigation }) {
         (_, error) => console.log`Error: ${error}`
       );
     });
-  }, [isFocused])
+
+    //If the route comes with a task_id, then get the task of that id.
+    if (route.params) {
+      db.transaction((tx) => {
+        tx.executeSql('select * from tasks where task_id = ?;',
+          [route.params.task_id],
+          (_, { rows: { _array } }) => {
+            setTask(_array[0].task)
+            setDescription(_array[0].description)
+            setPriority(_array[0].priority)
+          },
+          (_, error) => console.log`Error: ${error}`
+        );
+      });
+    }
+
+  }, [isFocused, colors])
 
   let tagIndex = 0;
-  let formattedTags = [{ key: tagIndex++, section: true, label: 'Etiquetas' }];
+  let formattedTags = [{ key: tagIndex++, section: true, label: 'Etiquetas:' }];
   let categoryIndex = 0;
-  let formattedCategories = [{ key: categoryIndex++, section: true, label: 'Categorias' }]
+  let formattedCategories = [{ key: categoryIndex++, section: true, label: 'Categorias:' }]
 
   useEffect(() => {
     setTags(tags);
@@ -134,8 +155,6 @@ export default function Task({ navigation }) {
 
       navigateBack();
 
-      // navigation.navigate("Tareas");
-
     } else {
       setShowalert(true);
     }
@@ -184,7 +203,7 @@ export default function Task({ navigation }) {
         placeholder="Tarea"
         placeholderTextColor={colors.border}
         returnKeyLabel='next'
-        selectionColor={'#00000050'}
+        selectionColor={{ color: colors.text }}
         onSubmitEditing={() => descriptionRef.current.focus()}
         onChangeText={setTask}
         defaultValue={`${task ? task : ''}`}
@@ -217,12 +236,21 @@ export default function Task({ navigation }) {
           }
           }
           cancelText="Cancelar"
-          style={styles.modalSelector}
+
           selectStyle={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
           //Text style of the options inside the modal
-          optionTextStyle={styles.selectTextStyle}
-          //Text in the square
+          optionTextStyle={{ color: colors.text }}
+          //Text in the butotn square
           initValueTextStyle={{ color: colors.text }}
+          //Modal title section:
+          sectionStyle={{ backgroundColor: colors.card, borderRadius: 10 }}
+          sectionTextStyle={{ color: colors.text }}
+          //Options
+          optionStyle={{ backgroundColor: colors.card }}
+          optionContainerStyle={{ backgroundColor: colors.card }}
+          //Cancel button
+          cancelStyle={{ backgroundColor: colors.card }}
+          cancelTextStyle={{ color: colors.text }}
         />
       </View>
 
@@ -235,6 +263,9 @@ export default function Task({ navigation }) {
         style={styles.radioButtons}
         boxStyle={styles.boxRadioStyle}
         textStyle={{ color: colors.text, textAlign: 'center' }}
+        animationTypes={['pulse']}
+        duration={200}
+        init={2}
       />
 
       {/*REMINDER INPUT AND MODAL*/}
@@ -246,7 +277,7 @@ export default function Task({ navigation }) {
           <TextInput
             defaultValue={`${date ? date.toString().substr(0, 21) : 'Agregar recordatorio...'}`}
             editable={false}
-            style={{color: colors.text}}
+            style={{ color: colors.text }}
           />
         </TouchableOpacity>
         {
@@ -278,12 +309,21 @@ export default function Task({ navigation }) {
           }
           }
           cancelText="Cancelar"
-          style={styles.modalSelector}
+
           selectStyle={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
           //Text style of the options inside the modal
-          optionTextStyle={styles.selectTextStyle}
-          //Text in the square
+          optionTextStyle={{ color: colors.text }}
+          //Text in the butotn square
           initValueTextStyle={{ color: colors.text }}
+          //Modal title section:
+          sectionStyle={{ backgroundColor: colors.card, borderRadius: 10 }}
+          sectionTextStyle={{ color: colors.text }}
+          //Options
+          optionStyle={{ backgroundColor: colors.card }}
+          optionContainerStyle={{ backgroundColor: colors.card }}
+          //Cancel button
+          cancelStyle={{ backgroundColor: colors.card }}
+          cancelTextStyle={{ color: colors.text }}
         />
       </View>
 
