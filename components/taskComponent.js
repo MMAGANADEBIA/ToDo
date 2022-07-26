@@ -6,17 +6,21 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import * as SQLite from 'expo-sqlite';
 import { List } from 'react-content-loader/native';
 import { useTheme } from '@react-navigation/native';
-//themes
+import { useNavigation } from '@react-navigation/native';
 
 //open sqlite database
 const db = SQLite.openDatabase('todo.db');
 
-export default function TaskComponent(props) {
+export default function TaskComponent(props, { screenName }) {
+  //State consts
   const [tasks, setTasks] = useState(props.task);
   const [tags, setTags] = useState(props.tags);
   const [categories, setCategories] = useState(props.categories);
   const [checkedList, setCheckedList] = useState([]);
   const [pressedDelete, setPressedDelete] = useState(props.delete);
+
+  //navigation props
+  const navigation = useNavigation();
 
   //colors from the theme selected
   const { colors } = useTheme();
@@ -44,10 +48,6 @@ export default function TaskComponent(props) {
   useEffect(() => {
     setCheckedList(checkedList);
   }, [checkedList])
-
-  const editTask = () => {
-    console.log("redirect")
-  }
 
   const handleCheckedTasks = (value, task_id) => {
     value ? setCheckedList(checkedList => [...checkedList, task_id])
@@ -90,6 +90,10 @@ export default function TaskComponent(props) {
     }
   }
 
+  const editTask = (task_id) => {
+    navigation.navigate("Nueva Tarea", { task_id })
+  }
+
   return (
     <View style={styles.container}>
       {
@@ -103,7 +107,7 @@ export default function TaskComponent(props) {
                 onValueChange={(value) => handleCheckedTasks(value, task.task_id)}
               />
               <TouchableOpacity
-                onPress={editTask}
+                onPress={() => editTask(task.task_id)}
               >
                 <Text style={[styles.checkboxText, { color: colors.text }, checkedList.includes(task.task_id) ? styles.checkedBoxDecoration : '']}>{task.task}</Text>
                 {description(task)}
