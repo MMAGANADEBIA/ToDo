@@ -29,6 +29,13 @@ export default function Task({ navigation, route }) {
   const [timeDateOpen, setTimeDateOpen] = useState(false);
   const [categorySelected, setCategorieSelected] = useState(null);
   const [categorySelectedId, setCategorieSelectedId] = useState(null)
+  //Existent task data
+  const [eTask, setETask] = useState(null);
+  const [eDescription, setEDescription] = useState(null);
+  const [textExistentPriority, setTextExistentPriority] = useState(null);
+  const [ePriority, setEPriority] = useState(null);
+  const [eTag, setETag] = useState(null);
+  const [existentTaskId, setExistentTaskId] = useState(null);
 
   //Check if the screen is focused.
   const isFocused = useIsFocused()
@@ -70,19 +77,53 @@ export default function Task({ navigation, route }) {
 
     //If the route comes with a task_id, then get the task of that id.
     if (route.params) {
+      setExistentTaskId(route.params.task_id);
       db.transaction((tx) => {
         tx.executeSql('select * from tasks where task_id = ?;',
           [route.params.task_id],
           (_, { rows: { _array } }) => {
+            //Task name
             setTask(_array[0].task)
-            setDescription(_array[0].description)
-            setPriority(_array[0].priority)
+            //Task description
+            if (_array[0].description) {
+              setDescription(_array[0].description)
+            }
+            //Priority
+            if (_array[0].priority) {
+              setPriority(_array[0].priority)
+              setTextExistentPriority(_array[0].priority)
+            }
+            //Tag
+            if (_array[0].tag_id) {
+              db.transaction((tx) => {
+                tx.executeSql('select * from tags where tag_id = ?;',
+                  [_array[0].tag_id],
+                  (_, { rows: { _array } }) => {
+                    setTagSelected(_array[0].tag_name)
+                    setTagSelectedId(_array[0].tag_id)
+                  },
+                  (_, error) => console.log(`Erroror: ${error}`)
+                );
+              })
+            }
+            //Category list
+            if (_array[0].category_id) {
+              db.transaction((tx) => {
+                tx.executeSql('select * from category_lists where category_id = ?;',
+                  [_array[0].category_id],
+                  (_, { rows: { _array } }) => {
+                    setCategorieSelected(_array[0].category_name)
+                    setCategorieSelectedId(_array[0].category_id)
+                  },
+                  (_, error) => console.log(`A problem: ${error}`)
+                );
+              });
+            }
           },
           (_, error) => console.log`Error: ${error}`
         );
       });
     }
-
   }, [isFocused, colors])
 
   let tagIndex = 0;
@@ -120,8 +161,23 @@ export default function Task({ navigation, route }) {
     }
   ]
 
+  useEffect(() => {
+    for (let i = 1; i < priorityRadioButtons.length; i++) {
+      if (priorityRadioButtons[i].label == textExistentPriority) {
+        setEPriority(i + 1);
+      }
+    }
+  }, [textExistentPriority])
+
   const saveTask = () => {
     if (task) {
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlayShound: true,
+          shouldSetBadge: true,
+        })
+      })
 
       db.transaction((tx) => {
         tx.executeSql(
@@ -129,30 +185,44 @@ export default function Task({ navigation, route }) {
         )
       })
 
-      if (date) {
-        Notifications.setNotificationHandler({
-          handleNotification: async () => ({
-            shouldShowAlert: true,
-            shouldPlayShound: true,
-            shouldSetBadge: true,
-          })
+      if (route.params) {
+        //If the task comes to a edit.
+        db.transaction((tx) => {
+          tx.executeSql('UPDATE tasks SET task = ?, description = ?, tag_id = ?, priority = ?, category_id = ? WHERE task_id = ?;',
+            [task, description, tagSelectedId, priority, categorySelectedId, route.params.task_id]
+          );
+        })
+        if (date) {
+
+          Notifications.cancelScheduledNotificationAsync(date);
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: task,
+              body: `${description ? description : `Recordatorio : ${task}`}`,
+            },
+            trigger: date,
+          });
+        }
+
+      } else {
+        //If the task is new.
+        if (date) {
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: task,
+              body: `${description ? description : `Recordatorio : ${task}`}`,
+            },
+            trigger: date,
+          });
+        }
+
+        db.transaction((tx) => {
+          tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id) values(?, ?, ?, ?, ?);',
+            [task, description, tagSelectedId, priority, categorySelectedId]
+          );
         })
 
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: task,
-            body: `${description ? description : `Recordatorio : ${task}`}`,
-          },
-          trigger: date,
-        });
       }
-
-      db.transaction((tx) => {
-        tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id) values(?, ?, ?, ?, ?);',
-          [task, description, tagSelectedId, priority, categorySelectedId]
-        );
-      })
-
       navigateBack();
 
     } else {
@@ -236,7 +306,6 @@ export default function Task({ navigation, route }) {
           }
           }
           cancelText="Cancelar"
-
           selectStyle={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.card }}
           //Text style of the options inside the modal
           optionTextStyle={{ color: colors.text }}
@@ -258,14 +327,18 @@ export default function Task({ navigation, route }) {
       <Text style={[styles.textLabel, { color: colors.text }]}>Prioridad (opcional)</Text>
       <RadioButtonRN
         data={priorityRadioButtons}
-        selectedBtn={(element) => setPriority(element.label)}
+        // selectedBtn={(element) => setPriority(element.label)}
+        selectedBtn={(element) => {
+          element ? setPriority(element.label) : setPriority(null)
+        }
+        }
         box={false}
         style={styles.radioButtons}
         boxStyle={styles.boxRadioStyle}
         textStyle={{ color: colors.text, textAlign: 'center' }}
         animationTypes={['pulse']}
         duration={200}
-        init={2}
+        initial={ePriority ? ePriority : 0}
       />
 
       {/*REMINDER INPUT AND MODAL*/}
