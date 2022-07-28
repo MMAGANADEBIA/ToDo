@@ -99,7 +99,7 @@ export default function TaskComponent(props, { screenName }) {
       {
         tasks ? tasks.map((task) => {
           return (
-            <View style={[styles.checkboxContainer, { backgroundColor: colors.card }]} key={task.task_id}>
+            <View style={[styles.checkboxContainer, checkedList.includes(task.task_id) ? { backgroundColor: colors.background } : { backgroundColor: colors.card }]} key={task.task_id}>
               <Checkbox
                 style={styles.checkbox}
                 // value={isChecked}
