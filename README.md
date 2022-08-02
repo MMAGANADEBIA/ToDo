@@ -15,9 +15,10 @@ A ToDo app made with react native and expo with just the things you need.
 - [x] Light theme.
 - [x] BarStyle themed.
 - [ ] Select the last colors.
-- [ ] Edit the selected task.
+- [x] Edit the selected task.
   - [x] Edit task information.
-  - [ ] Edit scheduled notifications. (remove and re schedule notification).
+  - [x] Edit scheduled notifications. (remove and re schedule notification).
+- [ ] Remove scheduled notifications from complete tasks.
 
 ## Fixes
 - [x] Many renders in filter.
