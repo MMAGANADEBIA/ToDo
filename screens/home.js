@@ -35,7 +35,7 @@ export default function Home({ navigation }) {
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
-        'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);',
+        'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number, notification text, notificationIdentifier text);',
       )
     });
     db.transaction((tx) => {
@@ -48,6 +48,9 @@ export default function Home({ navigation }) {
         'create table if not exists category_lists(category_id integer primary key autoincrement, category_name text not null, description text);'
       )
     });
+    // db.transaction((tx) => {
+    //   tx.executeSql('drop table tasks')
+    // })
   }, [])
 
   //Get the local database data when screen is focused.

@@ -1,7 +1,7 @@
 //important modules
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native'
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useId } from 'react';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ModalSelector from 'react-native-modal-selector';
 import RadioButtonRN from 'radio-buttons-react-native';
@@ -29,6 +29,7 @@ export default function Task({ navigation, route }) {
   const [timeDateOpen, setTimeDateOpen] = useState(false);
   const [categorySelected, setCategorieSelected] = useState(null);
   const [categorySelectedId, setCategorieSelectedId] = useState(null)
+  const [notificationIdentifier, setNotificationIdentifier] = useState(null);
   //Existent task data
   const [eTask, setETask] = useState(null);
   const [eDescription, setEDescription] = useState(null);
@@ -119,6 +120,13 @@ export default function Task({ navigation, route }) {
                 );
               });
             }
+            //Date
+            if (_array[0].notification) {
+              setDate(_array[0].notification)
+            }
+            if (_array[0].notificationIdentifier) {
+              setNotificationIdentifier(_array[0].notificationIdentifier)
+            }
           },
           (_, error) => console.log`Error: ${error}`
         );
@@ -144,7 +152,7 @@ export default function Task({ navigation, route }) {
         formattedCategories.push({ key: categoryIndex++, label: category.category_name, id: category.category_id })
       })
     }
-  }, [tags, categories, tagSelected, priority, categorySelected, task, description])
+  }, [tags, categories, tagSelected, priority, categorySelected, task, description, date])
 
   const priorityRadioButtons = [
     {
@@ -169,6 +177,30 @@ export default function Task({ navigation, route }) {
     }
   }, [textExistentPriority])
 
+  const cancelNotification = () => {
+    //Delete scheduled notification.
+    Notifications.getAllScheduledNotificationsAsync().then(identifier => {
+      identifier.map((element) => {
+        if (element.identifier == notificationIdentifier) {
+          Notifications.cancelScheduledNotificationAsync(notificationIdentifier)
+        }
+      })
+    })
+    updateNotification();
+  }
+
+  const updateNotification = () => {
+    //Schedule new notification.
+    Notifications.scheduleNotificationAsync({
+      content: {
+        title: task,
+        body: `${description ? description : `Recordatorio : ${task}`}`,
+        vibrate: true,
+      },
+      trigger: date,
+    });
+  }
+
   const saveTask = () => {
     if (task) {
       Notifications.setNotificationHandler({
@@ -178,10 +210,9 @@ export default function Task({ navigation, route }) {
           shouldSetBadge: true,
         })
       })
-
       db.transaction((tx) => {
         tx.executeSql(
-          'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number);'
+          'create table if not exists tasks(task_id integer primary key autoincrement, task text not null, description text, tag_id text, priority text, category_id number, notification text, notificationIdentifier text);'
         )
       })
 
@@ -194,14 +225,15 @@ export default function Task({ navigation, route }) {
         })
         if (date) {
 
-          Notifications.cancelScheduledNotificationAsync(date);
-          Notifications.scheduleNotificationAsync({
-            content: {
-              title: task,
-              body: `${description ? description : `Recordatorio : ${task}`}`,
-            },
-            trigger: date,
-          });
+          //Cancel notification.
+          cancelNotification(date);
+
+          let editedNotification = date.toString();
+          db.transaction((tx) => {
+            tx.executeSql('UPDATE tasks SET notification = ? WHERE task_id = ?;',
+              [editedNotification, route.params.task_id]
+            );
+          })
         }
 
       } else {
@@ -211,18 +243,28 @@ export default function Task({ navigation, route }) {
             content: {
               title: task,
               body: `${description ? description : `Recordatorio : ${task}`}`,
+              vibrate: true,
             },
             trigger: date,
-          });
+          }).then(result => {
+            setNotificationIdentifier(result)
+          })
+
+          let notification = date.toString();
+          db.transaction((tx) => {
+            tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id, notification, notificationIdentifier) values(?, ?, ?, ?, ?, ?, ?);',
+              [task, description, tagSelectedId, priority, categorySelectedId, notification, notificationIdentifier]
+            );
+          })
+        } else {
+          db.transaction((tx) => {
+            tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id) values(?, ?, ?, ?, ?);',
+              [task, description, tagSelectedId, priority, categorySelectedId]
+            );
+          })
         }
-
-        db.transaction((tx) => {
-          tx.executeSql('INSERT INTO tasks(task, description, tag_id, priority, category_id) values(?, ?, ?, ?, ?);',
-            [task, description, tagSelectedId, priority, categorySelectedId]
-          );
-        })
-
       }
+
       navigateBack();
 
     } else {
@@ -269,7 +311,7 @@ export default function Task({ navigation, route }) {
       {/*TASK NAME*/}
       <Text style={[styles.textLabel, { color: colors.text }]}>Tarea</Text>
       <TextInput
-        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
         placeholder="Tarea"
         placeholderTextColor={colors.border}
         returnKeyLabel='next'
@@ -282,7 +324,7 @@ export default function Task({ navigation, route }) {
       {/*DESCRIPTION INPUT*/}
       <Text style={[styles.textLabel, { color: colors.text }]} >Descripción (opcional)</Text>
       <TextInput
-        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
+        style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }]}
         placeholder="Descripción (opcional)"
         placeholderTextColor={colors.border}
         returnKeyLabel='done'
